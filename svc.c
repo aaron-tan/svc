@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "svc.h"
 
 void *svc_init(void) {
