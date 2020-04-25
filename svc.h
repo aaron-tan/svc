@@ -3,6 +3,34 @@
 
 #include <stdlib.h>
 
+struct head {
+  struct branch* cur_branch;
+  struct file* tracked_files;
+};
+
+struct branch {
+  char* name;
+  struct commit* active_commit;
+  struct branch* next_branch;
+};
+
+struct commit {
+  char* commit_id;
+  char* branch_name;
+  char* commit_msg;
+  struct file* files;
+  struct commit* prev_commit;
+  struct commit* next_commit;
+};
+
+struct file {
+  char* name;
+  char* contents;
+  int hash;
+  struct file* prev_file;
+  struct file* next_file;
+};
+
 typedef struct resolution {
     // NOTE: DO NOT MODIFY THIS STRUCT
     char *file_name;
@@ -38,4 +66,3 @@ int svc_reset(void *helper, char *commit_id);
 char *svc_merge(void *helper, char *branch_name, resolution *resolutions, int n_resolutions);
 
 #endif
-
