@@ -57,6 +57,7 @@ void cleanup(void *helper) {
       free(all_branches[i]->name);
       free(all_branches[i]);
     }
+    free(all_branches);
     free(h);
 }
 
