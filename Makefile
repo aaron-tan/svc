@@ -1,10 +1,10 @@
 CC=gcc
-CFLAGS=-O0 -std=gnu11 -lm -Wextra -fsanitize=address -g
+CFLAGS=-O0 -std=gnu11 -Wextra -fsanitize=address -g
 DEPS=svc.h
-OBJ=svc.o tester.o
+OBJ=tester.o svc.o
 
 
-%.o: %.c %.h $(DEPS)
+%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 tester: $(OBJ)

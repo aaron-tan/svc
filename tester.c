@@ -45,6 +45,39 @@ int test_list_branches(void* helper) {
   return 0;
 }
 
+int test_svc_add(void* helper) {
+  assert(svc_add(helper, "hello.py") == 2027);
+  assert(svc_add(helper, "hello.py") == -2);
+
+  // Do checks on helper itself.
+  struct head* h = (struct head*) helper;
+  assert(strcmp(h->tracked_files->name, "hello.py") == 0);
+  printf("%s", h->tracked_files->contents);
+  assert(h->tracked_files->stat == ADDED);
+  assert(h->tracked_files->prev_file == NULL);
+  assert(h->tracked_files->next_file == NULL);
+
+  assert(svc_add(helper, "Tests/test1.in") == 564);
+
+  // Do checks again after adding Tests/test1.in
+  assert(strcmp(h->tracked_files->name, "hello.py") == 0);
+  printf("%s", h->tracked_files->contents);
+  assert(h->tracked_files->stat == ADDED);
+  assert(h->tracked_files->prev_file == NULL);
+  assert(h->tracked_files->next_file != NULL);
+
+  // Get Tests/test1.in
+  struct file* test1 = h->tracked_files->next_file;
+
+  assert(strcmp(test1->name, "Tests/test1.in") == 0);
+  printf("%s", test1->contents);
+  assert(test1->stat == ADDED);
+  assert(test1->prev_file == h->tracked_files);
+  assert(test1->next_file == NULL);
+
+  return 0;
+}
+
 int main() {
     void *helper = svc_init();
 
@@ -57,10 +90,13 @@ int main() {
     assert(svc_branch(helper, "good-branch") == -2);
     assert(test_svc_branch(helper) == 0);
 
-    assert(test_list_branches(helper) == 0);
+    // assert(test_list_branches(helper) == 0);
+
+    // Tests for svc_add.
+    assert(test_svc_add(helper) == 0);
+    // Tests for svc_checkout.
 
     cleanup(helper);
-    // assert(test_list_branches(helper) == 0);
 
     return 0;
 }

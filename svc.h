@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+typedef enum {ADDED, MODIFIED, REMOVED, MERGED} STATUS;
+
 struct head {
   struct branch* cur_branch;
   struct file* tracked_files;
@@ -26,6 +28,7 @@ struct commit {
 struct file {
   char* name;
   char* contents;
+  STATUS stat;
   int hash;
   struct file* prev_file;
   struct file* next_file;
