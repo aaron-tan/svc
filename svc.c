@@ -40,6 +40,21 @@ int get_num_bytes(char* file_name) {
   return num_bytes;
 }
 
+// Check if a branch exists.
+int branch_exist(void* helper, char* branch_name) {
+  struct head* h = (struct head*) helper;
+  struct branch* b = h->cur_branch;
+
+  do {
+    if (strcmp(b->name, branch_name) == 0) {
+      return 1;
+    }
+    b = b->next_branch;
+  } while (b != h->cur_branch);
+
+  return 0;
+}
+
 // Initialise the data structures and return a ptr to the memory.
 void *svc_init(void) {
     // Branches will be stored as a circular linked list.
@@ -212,7 +227,26 @@ int svc_branch(void *helper, char *branch_name) {
 }
 
 int svc_checkout(void *helper, char *branch_name) {
-    // TODO: Implement
+    struct head* h = (struct head*) helper;
+    struct branch* cur = h->cur_branch;
+
+    if (branch_name == NULL || !branch_exist(helper, branch_name)) {
+      return -1;
+    }
+
+    // If there are uncommitted changes return -2.
+    if (h->tracked_files != NULL) {
+      return -2;
+    }
+
+    do {
+      if (strcmp(cur->name, branch_name) == 0) {
+        h->cur_branch = cur;
+        break;
+      }
+      cur = cur->next_branch;
+    } while (cur != h->cur_branch);
+
     return 0;
 }
 

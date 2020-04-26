@@ -20,11 +20,13 @@ int test_svc_branch(void* helper) {
   struct head* h = (struct head*) helper;
   struct branch* master = h->cur_branch;
 
-  do {
-    // assert(strcmp(master->name, "master") == 0 || strcmp(master->name, "example") == 0);
-    // printf("%s\n", master->name);
-    master = master->next_branch;
-  } while (master != h->cur_branch);
+  assert(svc_branch(helper, "example_branch/branch-10") == 0);
+  assert(svc_branch(helper, "example") == 0);
+  assert(svc_branch(helper, "good-branch") == 0);
+
+  assert(svc_branch(helper, "example") == -2);
+  assert(svc_branch(helper, "example_branch/branch-10") == -2);
+  assert(svc_branch(helper, "good-branch") == -2);
 
   return 0;
 }
@@ -95,24 +97,32 @@ int test_svc_add_example_2(void* helper) {
   return 0;
 }
 
+int test_svc_checkout(void* helper) {
+  assert(svc_checkout(helper, "example") == -1);
+
+  struct head* h = (struct head*) helper;
+  struct branch* b = h->cur_branch;
+
+  assert(strcmp(b->name, "example") == 0);
+  printf("Checkout branch: %s\n", b->name);
+
+  return 0;
+}
+
 int main() {
     void *helper = svc_init();
 
-    assert(svc_branch(helper, "example_branch/branch-10") == 0);
-    assert(svc_branch(helper, "example") == 0);
-    assert(svc_branch(helper, "good-branch") == 0);
-
-    assert(svc_branch(helper, "example") == -2);
-    assert(svc_branch(helper, "example_branch/branch-10") == -2);
-    assert(svc_branch(helper, "good-branch") == -2);
     assert(test_svc_branch(helper) == 0);
 
-    // assert(test_list_branches(helper) == 0);
+    assert(test_list_branches(helper) == 0);
+
+    // Tests for svc_checkout.
+    assert(test_svc_checkout(helper) == 0);
 
     // Tests for svc_add.
     assert(test_svc_add_example_1(helper) == 0);
     assert(test_svc_add_example_2(helper) == 0);
-    // Tests for svc_checkout.
+
 
     cleanup(helper);
 
