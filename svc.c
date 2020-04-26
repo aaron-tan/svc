@@ -294,10 +294,14 @@ int svc_add(void *helper, char *file_name) {
     struct head* h = (struct head*) helper;
     struct file* files = h->tracked_files;
 
+    // Get the hash of the file.
+    int h_file = hash_file(helper, file_name);
+
     // Check if the file has already been added.
     while (files != NULL) {
       printf("%s\n", files->name);
-      if (strcmp(files->name, file_name) == 0) {
+      // Compare hashes is perhaps more accurate.
+      if (files->hash == h_file) {
         return -2;
       }
       files = files->next_file;

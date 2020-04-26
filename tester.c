@@ -98,7 +98,7 @@ int test_svc_add_example_2(void* helper) {
 }
 
 int test_svc_checkout(void* helper) {
-  assert(svc_checkout(helper, "example") == -1);
+  assert(svc_checkout(helper, "example") == 0);
 
   struct head* h = (struct head*) helper;
   struct branch* b = h->cur_branch;
