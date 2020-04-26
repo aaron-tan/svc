@@ -105,6 +105,7 @@ void cleanup(void *helper) {
     }
     // End of cleaning up for all the branches.
 
+    free(all_files);
     free(all_branches);
     free(h);
 }
