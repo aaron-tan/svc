@@ -39,8 +39,25 @@ void *svc_init(void) {
 
 // Free the helper data structure.
 void cleanup(void *helper) {
-    free(((struct head*)helper)->cur_branch);
-    free(helper);
+    struct head* h = (struct head*) helper;
+    struct branch* cur = h->cur_branch;
+
+    struct branch** all_branches = malloc(sizeof(struct branch*));
+    int num_branches = 1;
+
+    do {
+      all_branches[num_branches - 1] = cur;
+      num_branches += 1;
+      all_branches = realloc(all_branches, num_branches * sizeof(struct branch*));
+
+      cur = cur->next_branch;
+    } while (cur != h->cur_branch);
+
+    for (int i = 0; i < (num_branches - 1); i++) {
+      free(all_branches[i]->name);
+      free(all_branches[i]);
+    }
+    free(h);
 }
 
 // Calculate the hash value of a file.

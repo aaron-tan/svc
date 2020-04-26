@@ -60,6 +60,7 @@ int main() {
     assert(test_list_branches(helper) == 0);
 
     cleanup(helper);
+    assert(test_list_branches(helper) == 0);
 
     return 0;
 }
