@@ -45,7 +45,7 @@ int test_list_branches(void* helper) {
   return 0;
 }
 
-int test_svc_add(void* helper) {
+int test_svc_add_example_1(void* helper) {
   assert(svc_add(helper, "hello.py") == 2027);
   assert(svc_add(helper, "hello.py") == -2);
 
@@ -78,6 +78,23 @@ int test_svc_add(void* helper) {
   return 0;
 }
 
+int test_svc_add_example_2(void* helper) {
+  assert(svc_add(helper, "COMP2017/svc.h") == 5007);
+  assert(svc_add(helper, "COMP2017/svc.c") == 5217);
+  assert(svc_add(helper, "hello.py") == -2);
+  assert(svc_add(helper, "Tests/test1.in") == -2);
+
+  struct head* h = (struct head*) helper;
+  struct file* files = h->tracked_files;
+
+  while (files != NULL) {
+    printf("%s\n", files->name);
+    files = files->next_file;
+  }
+
+  return 0;
+}
+
 int main() {
     void *helper = svc_init();
 
@@ -93,7 +110,8 @@ int main() {
     // assert(test_list_branches(helper) == 0);
 
     // Tests for svc_add.
-    assert(test_svc_add(helper) == 0);
+    assert(test_svc_add_example_1(helper) == 0);
+    assert(test_svc_add_example_2(helper) == 0);
     // Tests for svc_checkout.
 
     cleanup(helper);

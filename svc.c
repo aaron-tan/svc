@@ -258,17 +258,14 @@ int svc_add(void *helper, char *file_name) {
 
     // Add to the system.
     struct head* h = (struct head*) helper;
+    struct file* files = h->tracked_files;
 
     // Check if the file has already been added.
-    if (h->tracked_files != NULL) {
-      struct file* check = h->tracked_files;
-
-      while (check != NULL) {
-        if (strcmp(check->name, file_name) == 0) {
-          return -2;
-        }
-        check = check->next_file;
+    while (files != NULL) {
+      if (strcmp(files->name, file_name) == 0) {
+        return -2;
       }
+      files = files->next_file;
     }
 
     // There are no tracked files.
@@ -298,7 +295,7 @@ int svc_add(void *helper, char *file_name) {
       h->tracked_files->next_file = NULL;
     } else {
       // Traversal the doubly linked list until we get to a NULL.
-      struct file* files = h->tracked_files;
+      files = h->tracked_files;
 
       while (files->next_file != NULL) {
         files = files->next_file;
