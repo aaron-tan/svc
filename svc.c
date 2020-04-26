@@ -181,8 +181,9 @@ char **list_branches(void *helper, int *n_branches) {
 
     do {
       printf("%s\n", cur->name);
-      branch_list[n - 1] = malloc(51);
-      strcpy(branch_list[n - 1], cur->name);
+      // branch_list[n - 1] = malloc(51);
+      // strcpy(branch_list[n - 1], cur->name);
+      branch_list[n - 1] = cur->name;
 
       n += 1;
       branch_list = realloc(branch_list, n * sizeof(char*));
