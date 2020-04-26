@@ -297,6 +297,7 @@ int svc_add(void *helper, char *file_name) {
     // Check if the file has already been added.
     while (files != NULL) {
       if (strcmp(files->name, file_name) == 0) {
+        printf("%s\n", files->name);
         return -2;
       }
       files = files->next_file;
