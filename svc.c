@@ -299,7 +299,7 @@ int svc_add(void *helper, char *file_name) {
 
     // Check if the file has already been added.
     while (files != NULL) {
-      printf("%s\n", files->name);
+      // printf("%s\n", files->name);
       // Compare hashes is perhaps more accurate.
       if (files->hash == h_file) {
         return -2;
