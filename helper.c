@@ -83,7 +83,7 @@ int check_modified(void* helper) {
       FILE* fp = fopen(files->name, "rb");
 
       // Keep a temp array of contents first in case something goes wrong.
-      char* temp = malloc((bytes + 1));
+      char* temp = malloc(bytes + 1);
 
       // Re-read the modified contents.
       if (fread(temp, bytes, 1, fp) != 1) {

@@ -169,11 +169,23 @@ int test_example_1(void* helper) {
   return 0;
 }
 
+int test_example_2(void* helper) {
+  assert(svc_add(helper, "COMP2017/svc.h") == 5007);
+  assert(svc_add(helper, "COMP2017/svc.c") == 5217);
+
+  char* id = svc_commit(helper, "Initial commit");
+  printf("%s\n", id);
+  assert(strcmp(id, "7b3e30") == 0);
+
+  return 0;
+}
+
 int main() {
     void *helper = svc_init();
 
-    assert(test_example_1(helper) == 0);
+    // assert(test_example_1(helper) == 0);
     // assert(test_svc_add_example_1(helper) == 0);
+    assert(test_example_2(helper) == 0);
 
     cleanup(helper);
 
