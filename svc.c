@@ -143,7 +143,7 @@ char *svc_commit(void *helper, char *message) {
 
     struct head* h = (struct head*) helper;
     struct branch* cur = h->cur_branch;
-    struct file* files = h->tracked_files;
+    // struct file* files = h->tracked_files;
 
     // while (files != NULL) {
     //   // Get the hash of the file.
