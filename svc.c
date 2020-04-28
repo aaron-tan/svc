@@ -43,6 +43,7 @@ void cleanup(void *helper) {
       }
 
       for (int i = 0; i < (num_commits - 1); i++) {
+        free(all_commits[i]->commit_id);
         free(all_commits[i]);
       }
     }
