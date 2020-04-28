@@ -2,58 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "svc.h"
-
-// Check if a string given is invalid for branch name.
-int check_invalid(char* str) {
-  while (*str) {
-    // If str contains at least one of these ascii. it is invalid.
-    if (*str == 45 ||
-    *str == 47 ||
-    (*str >= 48 && *str <= 57) ||
-    (*str >= 65 && *str <= 90) ||
-    (*str >= 97 && *str <= 122) ||
-    *str == 95) {
-      str++;
-    } else {
-      return 1;
-    }
-  }
-  return 0;
-}
-
-// Get the number of bytes of a file.
-int get_num_bytes(char* file_name) {
-  FILE* fp = fopen(file_name, "rb");
-
-  if (fp == NULL) {
-    return -3;
-  }
-
-  fseek(fp, 0L, SEEK_END);
-
-  int num_bytes = ftell(fp);
-
-  fseek(fp, 0, SEEK_SET);
-
-  fclose(fp);
-
-  return num_bytes;
-}
-
-// Check if a branch exists.
-int branch_exist(void* helper, char* branch_name) {
-  struct head* h = (struct head*) helper;
-  struct branch* b = h->cur_branch;
-
-  do {
-    if (strcmp(b->name, branch_name) == 0) {
-      return 1;
-    }
-    b = b->next_branch;
-  } while (b != h->cur_branch);
-
-  return 0;
-}
+#include "helper.h"
 
 // Initialise the data structures and return a ptr to the memory.
 void *svc_init(void) {
@@ -77,6 +26,27 @@ void cleanup(void *helper) {
     struct head* h = (struct head*) helper;
     struct branch* cur = h->cur_branch;
     struct file* files = h->tracked_files;
+    struct commit* commits = cur->active_commit;
+
+    // Clean up all the commits in the current branch.
+    struct commit** all_commits = malloc(sizeof(struct commit*));
+    int num_commits = 1;
+    if (commits != NULL) {
+      all_commits[num_commits - 1] = commits;
+      num_commits += 1;
+
+      while (commits->prev_commit != NULL) {
+        commits = commits->prev_commit;
+        all_commits = realloc(all_commits, num_commits * sizeof(struct commit*));
+        all_commits[num_commits - 1] = commits;
+        num_commits += 1;
+      }
+
+      for (int i = 0; i < (num_commits - 1); i++) {
+        free(all_commits[i]);
+      }
+    }
+    // End of cleaning up for all commits.
 
     /** Clean up for if there is something staging.
     * After calling svc_add without svc_rm there is something
@@ -88,8 +58,8 @@ void cleanup(void *helper) {
       all_files[num_files - 1] = files;
       num_files += 1;
 
-      while (files->next_file != NULL) {
-        files = files->next_file;
+      while (files->prev_file != NULL) {
+        files = files->prev_file;
         all_files = realloc(all_files, num_files * sizeof(struct file*));
         all_files[num_files - 1] = files;
         num_files += 1;
@@ -120,6 +90,7 @@ void cleanup(void *helper) {
     }
     // End of cleaning up for all the branches.
 
+    free(all_commits);
     free(all_files);
     free(all_branches);
     free(h);
@@ -131,22 +102,17 @@ int hash_file(void *helper, char *file_path) {
       return -1;
     }
 
-    FILE* fp = fopen(file_path, "r");
+    FILE* fp = fopen(file_path, "rb");
 
     // Check if the file exists.
     if (fp == NULL) {
       return -2;
     }
 
-    fseek(fp, 0L, SEEK_END);
+    int hash = 0;
 
     // Get the num_bytes.
-    int num_bytes = ftell(fp);
-
-    // Reset the file.
-    fseek(fp, 0, SEEK_SET);
-
-    int hash = 0;
+    int num_bytes = get_num_bytes(file_path);
 
     // Calculate hash of file name.
     for (unsigned long i = 0; i < strlen(file_path); i++) {
@@ -165,8 +131,38 @@ int hash_file(void *helper, char *file_path) {
 }
 
 char *svc_commit(void *helper, char *message) {
-    // TODO: Implement
-    return NULL;
+    // Check whether there are no changes since the last commit.
+    if (message == NULL || !check_modified(helper)) {
+      return NULL;
+    }
+
+    // Get the hexadecimal commit id.
+    char* hex_id = get_commit_id(helper, message);
+
+    struct head* h = (struct head*) helper;
+    struct branch* cur = h->cur_branch;
+    struct file* files = h->tracked_files;
+
+    // Create the commit.
+    struct commit* new_commit = malloc(sizeof(struct commit));
+    new_commit->commit_id = hex_id;
+    new_commit->branch_name = cur->name;
+    new_commit->commit_msg = message;
+    new_commit->files = files;
+
+    // The previous for the new commit is the one pointed to by active_commit.
+    new_commit->prev_commit = cur->active_commit;
+    new_commit->next_commit = NULL;
+
+    // We want the previous commit's next_commit to point to new_commit but not the first one.
+    if (cur->active_commit != NULL) {
+      cur->active_commit->next_commit = new_commit;
+    }
+
+    // Set the active_commit to be the new commit.
+    cur->active_commit = new_commit;
+
+    return hex_id;
 }
 
 void *get_commit(void *helper, char *commit_id) {
@@ -300,69 +296,77 @@ int svc_add(void *helper, char *file_name) {
     // Check if the file has already been added.
     while (files != NULL) {
       // Compare hashes is perhaps more accurate.
+      // Use the hashes to determine if a file has been modified.
       if (files->hash == h_file) {
         return -2;
       }
-      files = files->next_file;
+      files = files->prev_file;
     }
 
+    // Think about rewriting this.
     // There are no tracked files.
-    if (h->tracked_files == NULL) {
-      // Remember to free this later.
-      h->tracked_files = malloc(sizeof(struct file));
+    // if (h->tracked_files == NULL) {
+    //   // Remember to free this later.
+    //   h->tracked_files = malloc(sizeof(struct file));
+    //
+    //   // Populate the file with data.
+    //   h->tracked_files->name = file_name;
+    //   // Remember to free this later.
+    //   h->tracked_files->contents = malloc((bytes + 1));
+    //
+    //   // Read file contents into tracked_files contents.
+    //   if (fread(h->tracked_files->contents, bytes, 1, fp) != 1) {
+    //     // If something goes wrong we revert back to the original state.
+    //     free(h->tracked_files->contents);
+    //     free(h->tracked_files);
+    //     h->tracked_files = NULL;
+    //     fclose(fp);
+    //     return -3;
+    //   }
+    //   h->tracked_files->contents[bytes] = 0;
+    //
+    //   h->tracked_files->stat = ADDED;
+    //   h->tracked_files->hash = hash_file(helper, file_name);
+    //   h->tracked_files->prev_file = NULL;
+    //   h->tracked_files->next_file = NULL;
+    // } else {
+    //   files = h->tracked_files;
+    //
+    //   // Traversal the doubly linked list until we get to a NULL.
+    //   while (files->next_file != NULL) {
+    //     files = files->next_file;
+    //   }
+    //
+    // }
 
-      // Populate the file with data.
-      h->tracked_files->name = file_name;
-      // Remember to free this later.
-      h->tracked_files->contents = malloc((bytes + 1));
+    // Track this new file. Remember to free this later.
+    struct file* new_file = malloc(sizeof(struct file));
+    new_file->name = file_name;
+    // Remember to free this later.
+    new_file->contents = malloc((bytes + 1));
 
-      // Read file contents into tracked_files contents.
-      if (fread(h->tracked_files->contents, bytes, 1, fp) != 1) {
-        // If something goes wrong we revert back to the original state.
-        free(h->tracked_files->contents);
-        free(h->tracked_files);
-        h->tracked_files = NULL;
-        fclose(fp);
-        return -3;
-      }
-      h->tracked_files->contents[bytes] = 0;
-
-      h->tracked_files->stat = ADDED;
-      h->tracked_files->hash = hash_file(helper, file_name);
-      h->tracked_files->prev_file = NULL;
-      h->tracked_files->next_file = NULL;
-    } else {
-      // Traversal the doubly linked list until we get to a NULL.
-      files = h->tracked_files;
-
-      while (files->next_file != NULL) {
-        files = files->next_file;
-      }
-
-      // Track this new file. Remember to free this later.
-      struct file* new_file = malloc(sizeof(struct file));
-      new_file->name = file_name;
-      // Remember to free this later.
-      new_file->contents = malloc((bytes + 1));
-
-      // Read file contents into contents.
-      if (fread(new_file->contents, bytes, 1, fp) != 1) {
-        // If something goes wrong we revert back to the original state.
-        free(new_file->contents);
-        free(new_file);
-        fclose(fp);
-        return -3;
-      }
-      new_file->contents[bytes] = 0;
-
-      new_file->stat = ADDED;
-      new_file->hash = hash_file(helper, file_name);
-      new_file->prev_file = files;
-      new_file->next_file = NULL;
-
-      // Set files->next_file to the new tracked file.
-      files->next_file = new_file;
+    // Read file contents into contents.
+    if (fread(new_file->contents, bytes, 1, fp) != 1) {
+      // If something goes wrong we revert back to the original state.
+      free(new_file->contents);
+      free(new_file);
+      fclose(fp);
+      return -3;
     }
+    new_file->contents[bytes] = 0;
+
+    new_file->stat = ADDED;
+    new_file->hash = hash_file(helper, file_name);
+    new_file->prev_file = h->tracked_files;
+    new_file->next_file = NULL;
+
+    // We want the previous file's next_file to also point to new_file. But not the first added file.
+    if (h->tracked_files != NULL) {
+      h->tracked_files->next_file = new_file;
+    }
+
+    // tracked_files will always be pointing to the latest new tracked file.
+    h->tracked_files = new_file;
 
     fclose(fp);
 
@@ -370,8 +374,75 @@ int svc_add(void *helper, char *file_name) {
 }
 
 int svc_rm(void *helper, char *file_name) {
-    // TODO: Implement
-    return 0;
+    if (file_name == NULL) {
+      return -1;
+    }
+
+    // Get the hash of the file.
+    int h_file = hash_file(helper, file_name);
+
+    struct head* h = (struct head*) helper;
+    struct file* files = h->tracked_files;
+
+    while (files != NULL) {
+      // The file is tracked by the system.
+      if (files->hash == h_file) {
+        /** Three cases: either file is at the front of the list.
+        * middle of the list or
+        * rear of the list.
+        */
+        if (files->prev_file == NULL) {
+          // file is at the front of the list.
+          // Set the next file to be at the front.
+          h->tracked_files = files->next_file;
+          if (files->next_file != NULL) {
+            files->next_file->prev_file = NULL;
+          }
+
+          // Get its last known hash value.
+          int last_hash = files->hash;
+
+          // Free the file.
+          free(files->contents);
+          free(files);
+
+          return last_hash;
+        } else if (files->next_file == NULL) {
+          // file is at the rear of the list.
+          // set the prev file to be at the rear.
+          files->prev_file->next_file = NULL;
+
+          // Get its last known hash value.
+          int last_hash = files->hash;
+
+          // Free the file.
+          free(files->contents);
+          free(files);
+
+          return last_hash;
+        } else {
+          // file is in the middle of the list.
+          // set the prev file's next file to be next_file.
+          files->prev_file->next_file = files->next_file;
+          // set the next file's prev file to be prev_file.
+          files->next_file->prev_file = files->prev_file;
+
+          // Get its last known hash value.
+          int last_hash = files->hash;
+
+          // Free the file.
+          free(files->contents);
+          free(files);
+
+          return last_hash;
+        }
+      }
+
+      files = files->prev_file;
+    }
+
+    // File with the given name is not being tracked.
+    return -2;
 }
 
 int svc_reset(void *helper, char *commit_id) {

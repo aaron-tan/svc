@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-O0 -std=gnu11 -Wextra -fsanitize=address -g
-DEPS=svc.h
-OBJ=tester.o svc.o
+DEPS=svc.h helper.h
+OBJ=tester.o svc.o helper.o
 
 
 %.o: %.c $(DEPS)
