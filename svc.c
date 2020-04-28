@@ -133,7 +133,7 @@ int hash_file(void *helper, char *file_path) {
 
 char *svc_commit(void *helper, char *message) {
     // Check whether there are no changes since the last commit.
-    if (message == NULL) {
+    if (message == NULL || !check_modified(helper)) {
       return NULL;
     }
 
@@ -395,8 +395,9 @@ int svc_rm(void *helper, char *file_name) {
         if (files->prev_file == NULL) {
           // file is at the front of the list.
           // Set the next file to be at the front.
-          h->tracked_files = files->next_file;
-          if (files->next_file != NULL) {
+          if (files->next_file == NULL) {
+            h->tracked_files = files->next_file;
+          } else {
             files->next_file->prev_file = NULL;
           }
 
@@ -412,6 +413,9 @@ int svc_rm(void *helper, char *file_name) {
           // file is at the rear of the list.
           // set the prev file to be at the rear.
           files->prev_file->next_file = NULL;
+
+          // Set current tracked files to the prev file.
+          h->tracked_files = files->prev_file;
 
           // Get its last known hash value.
           int last_hash = files->hash;

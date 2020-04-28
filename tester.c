@@ -106,8 +106,13 @@ int test_svc_add_example_2(void* helper) {
 }
 
 int test_svc_remove(void* helper) {
-  assert(svc_rm(helper, "COMP2017/svc.h") == 5007);
-  assert(svc_rm(helper, "COMP2017/svc.c") == 5217);
+  svc_add(helper, "hello.py");
+  svc_add(helper, "Tests/test1.in");
+  svc_add(helper, "COMP2017/svc.c");
+  svc_add(helper, "COMP2017/svc.h");
+
+  // assert(svc_rm(helper, "COMP2017/svc.h") == 5007);
+  assert(svc_rm(helper, "Tests/test1.in") == 564);
 
   // Test file !being tracked.
   assert(svc_rm(helper, "whatever.c") == -2);
@@ -118,7 +123,7 @@ int test_svc_remove(void* helper) {
   while (files != NULL) {
     printf("In test svc remove: %s\n", files->name);
     printf("In test svc remove: %s", files->contents);
-    files = files->next_file;
+    files = files->prev_file;
   }
 
   return 0;
@@ -137,9 +142,9 @@ int test_svc_checkout(void* helper) {
 }
 
 int test_example_1(void* helper) {
-  // assert(hash_file(helper, "hello.py") == 2027);
+  assert(hash_file(helper, "hello.py") == 2027);
 
-  // assert(hash_file(helper, "fake.c") == -2);
+  assert(hash_file(helper, "fake.c") == -2);
 
   assert(svc_commit(helper, "No changes") == NULL);
 
@@ -155,9 +160,6 @@ int test_example_1(void* helper) {
   // char* id = get_commit_id(helper, "Initial commit");
   printf("%s\n", id);
   assert(strcmp(id, "74cde7") == 0);
-
-  char* new_id = svc_commit(helper, "What");
-  printf("%s\n", new_id);
 
   // struct head* h = (struct head*) helper;
   // struct branch* cur = h->cur_branch;
@@ -188,9 +190,10 @@ int test_example_2(void* helper) {
 int main() {
     void *helper = svc_init();
 
-    assert(test_example_1(helper) == 0);
+    // assert(test_example_1(helper) == 0);
     // assert(test_svc_add_example_1(helper) == 0);
     // assert(test_example_2(helper) == 0);
+    assert(test_svc_remove(helper) == 0);
 
     cleanup(helper);
 
