@@ -76,7 +76,7 @@ int check_modified(void* helper) {
 
     // Get the number of bytes of said file.
     int bytes = get_num_bytes(files->name);
-    printf("%d\n", bytes);
+    // printf("%d\n", bytes);
 
     // Compare hashes to see if the file with the same name has been modified.
     if (files->hash != hash) {
@@ -84,7 +84,7 @@ int check_modified(void* helper) {
       FILE* fp = fopen(files->name, "rb");
 
       // Keep a temp array of contents first in case something goes wrong.
-      char* temp = malloc(bytes + 1);
+      char* temp = malloc(100);
 
       // Re-read the modified contents.
       if (fread(temp, bytes, 1, fp) != 1) {
@@ -93,7 +93,7 @@ int check_modified(void* helper) {
         fclose(fp);
         return -3;
       }
-      temp[bytes] = 0;
+      temp[100] = 0;
 
       files->contents = temp;
       files->stat = MODIFIED;
@@ -124,11 +124,17 @@ int check_uncommitted(void* helper) {
   struct branch* cur = h->cur_branch;
   struct commit* cur_com = cur->active_commit;
 
-  // If cur_com is null, there are no commits at all. return 1
-  if (cur_com == NULL && track_files == NULL) {
-    return 1;
+  // If track_files is null, there are no commits at all. return 1
+  if (track_files == NULL) {
+    return 0;
   }
 
+  // If active commit is null, then everything in tracked files is an uncommitted change.
+  if (cur_com == NULL) {
+    return 1;
+  } else {
+
+  }
   struct file* comm_files = cur_com->files;
 
   while (comm_files != NULL) {

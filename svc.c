@@ -133,8 +133,7 @@ int hash_file(void *helper, char *file_path) {
 
 char *svc_commit(void *helper, char *message) {
     // Check whether there are no changes since the last commit.
-    if (message == NULL) {
-      // puts("Here");
+    if (message == NULL || !check_modified(helper)) {
       return NULL;
     }
 
