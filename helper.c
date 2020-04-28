@@ -74,6 +74,7 @@ int check_modified(void* helper) {
     // Get the hash of the tracked file.
     int hash = hash_file(helper, files->name);
 
+    // Could it be possible because this is outside the if it causes problems?
     // Get the number of bytes of said file.
     int bytes = get_num_bytes(files->name);
     // printf("%d\n", bytes);
@@ -87,7 +88,7 @@ int check_modified(void* helper) {
       char* temp = malloc(100);
 
       // Re-read the modified contents.
-      if (fread(temp, bytes, 1, fp) != 1) {
+      if (fread(temp, 100, 1, fp) != 1) {
         // If something goes wrong we just return an error.
         free(temp);
         fclose(fp);
