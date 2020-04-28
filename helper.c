@@ -76,7 +76,7 @@ int check_modified(void* helper) {
 
     // Could it be possible because this is outside the if it causes problems?
     // Get the number of bytes of said file.
-    int bytes = get_num_bytes(files->name);
+    // int bytes = get_num_bytes(files->name);
     // printf("%d\n", bytes);
 
     // Compare hashes to see if the file with the same name has been modified.
