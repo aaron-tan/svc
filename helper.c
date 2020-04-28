@@ -117,6 +117,35 @@ int check_modified(void* helper) {
   return is_modified;
 }
 
+// Check if there are uncommitted changes.
+int check_uncommitted(void* helper) {
+  struct head* h = (struct head*) helper;
+  struct file* track_files = h->tracked_files;
+  struct branch* cur = h->cur_branch;
+  struct commit* cur_com = cur->active_commit;
+
+  // If cur_com is null, there are no commits at all. return 1
+  if (cur_com == NULL && track_files == NULL) {
+    return 1;
+  }
+
+  struct file* comm_files = cur_com->files;
+
+  while (comm_files != NULL) {
+    // Get the hash of the file.
+    int h_file = hash_file(helper, comm_files->name);
+
+    // If the hash of the commit is different to the hash of the file there are uncommitted changes.
+    if (comm_files->hash != h_file) {
+      return 1;
+    }
+
+    comm_files = comm_files->prev_file;
+  }
+
+  return 0;
+}
+
 // Used to calculate the commit id as per the algorithm in section 3.2
 char* get_commit_id(void* helper, char* message) {
   struct head* h = (struct head*) helper;

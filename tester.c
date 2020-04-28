@@ -143,13 +143,13 @@ int test_svc_checkout(void* helper) {
 
 int test_example_1(void* helper) {
   // printf("%d\n", hash_file(helper, "hello.py"));
-  assert(hash_file(helper, "hello.py") == 2655);
+  assert(hash_file(helper, "hello.py") == 2027);
 
   assert(hash_file(helper, "fake.c") == -2);
 
   assert(svc_commit(helper, "No changes") == NULL);
 
-  assert(svc_add(helper, "hello.py") == 2655);
+  assert(svc_add(helper, "hello.py") == 2027);
 
   assert(svc_add(helper, "Tests/test1.in") == 564);
 

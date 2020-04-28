@@ -133,8 +133,8 @@ int hash_file(void *helper, char *file_path) {
 
 char *svc_commit(void *helper, char *message) {
     // Check whether there are no changes since the last commit.
-    if (message == NULL || !check_modified(helper)) {
-      puts("here");
+    if (message == NULL) {
+      // puts("Here");
       return NULL;
     }
 
@@ -145,12 +145,33 @@ char *svc_commit(void *helper, char *message) {
     struct branch* cur = h->cur_branch;
     struct file* files = h->tracked_files;
 
+    // while (files != NULL) {
+    //   // Get the hash of the file.
+    //   int h_file = hash_file(helper, files->name);
+    //
+    //   // Get the number of bytes.
+    //   int num_bytes = get_num_bytes(files->name);
+    //
+    //   if (files->hash != h_file) {
+    //     FILE* fp = fopen(files->name, "rb");
+    //
+    //     files->contents = malloc(num_bytes + 1);
+    //     fread(files->contents, num_bytes, 1, fp);
+    //     files->contents[num_bytes] = 0;
+    //
+    //     files->stat = MODIFIED;
+    //     files->hash = hash_file(helper, files->name);
+    //   }
+    //
+    //   files = files->prev_file;
+    // }
+
     // Create the commit.
     struct commit* new_commit = malloc(sizeof(struct commit));
     new_commit->commit_id = hex_id;
     new_commit->branch_name = cur->name;
     new_commit->commit_msg = message;
-    new_commit->files = files;
+    new_commit->files = h->tracked_files;
 
     // The previous for the new commit is the one pointed to by active_commit.
     new_commit->prev_commit = cur->active_commit;
