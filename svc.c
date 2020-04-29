@@ -133,15 +133,15 @@ int hash_file(void *helper, char *file_path) {
 
 char *svc_commit(void *helper, char *message) {
     // Check whether there are no changes since the last commit.
-    if (message == NULL || !check_modified(helper)) {
+    if (message == NULL) {
       return NULL;
     }
 
     // Get the hexadecimal commit id.
     char* hex_id = get_commit_id(helper, message);
 
-    struct head* h = (struct head*) helper;
-    struct branch* cur = h->cur_branch;
+    // struct head* h = (struct head*) helper;
+    // struct branch* cur = h->cur_branch;
     // struct file* files = h->tracked_files;
 
     // while (files != NULL) {
@@ -166,23 +166,23 @@ char *svc_commit(void *helper, char *message) {
     // }
 
     // Create the commit.
-    struct commit* new_commit = malloc(sizeof(struct commit));
-    new_commit->commit_id = hex_id;
-    new_commit->branch_name = cur->name;
-    new_commit->commit_msg = message;
-    new_commit->files = h->tracked_files;
-
-    // The previous for the new commit is the one pointed to by active_commit.
-    new_commit->prev_commit = cur->active_commit;
-    new_commit->next_commit = NULL;
-
-    // We want the previous commit's next_commit to point to new_commit but not the first one.
-    if (cur->active_commit != NULL) {
-      cur->active_commit->next_commit = new_commit;
-    }
-
-    // Set the active_commit to be the new commit.
-    cur->active_commit = new_commit;
+    // struct commit* new_commit = malloc(sizeof(struct commit));
+    // new_commit->commit_id = hex_id;
+    // new_commit->branch_name = cur->name;
+    // new_commit->commit_msg = message;
+    // new_commit->files = h->tracked_files;
+    //
+    // // The previous for the new commit is the one pointed to by active_commit.
+    // new_commit->prev_commit = cur->active_commit;
+    // new_commit->next_commit = NULL;
+    //
+    // // We want the previous commit's next_commit to point to new_commit but not the first one.
+    // if (cur->active_commit != NULL) {
+    //   cur->active_commit->next_commit = new_commit;
+    // }
+    //
+    // // Set the active_commit to be the new commit.
+    // cur->active_commit = new_commit;
 
     return hex_id;
 }

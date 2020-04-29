@@ -71,6 +71,14 @@ int check_modified(void* helper) {
 
   // Traverse the doubly linked list to check for modifications.
   while (files != NULL) {
+    // Open the file to get ready to read it if necessary.
+    FILE* fp = fopen(files->name, "rb");
+
+    // Check if the file exists.
+    if (fp == NULL) {
+      return -2;
+    }
+
     // Get the hash of the tracked file.
     int hash = hash_file(helper, files->name);
 
@@ -81,8 +89,6 @@ int check_modified(void* helper) {
 
     // Compare hashes to see if the file with the same name has been modified.
     if (files->hash != hash) {
-      // File has been modified. Re-read its contents
-      FILE* fp = fopen(files->name, "rb");
 
       // Keep a temp array of contents first in case something goes wrong.
       char* temp = malloc(100);
