@@ -137,8 +137,6 @@ char *svc_commit(void *helper, char *message) {
       return NULL;
     }
 
-    // Get the hexadecimal commit id.
-    char* hex_id = get_commit_id(helper, message);
 
     struct head* h = (struct head*) helper;
     // struct branch* cur = h->cur_branch;
@@ -148,6 +146,8 @@ char *svc_commit(void *helper, char *message) {
       return NULL;
     }
 
+    // Get the hexadecimal commit id.
+    char* hex_id = get_commit_id(helper, message);
     // while (files != NULL) {
     //   // Get the hash of the file.
     //   int h_file = hash_file(helper, files->name);
