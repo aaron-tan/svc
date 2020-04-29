@@ -141,7 +141,7 @@ char *svc_commit(void *helper, char *message) {
     char* hex_id = get_commit_id(helper, message);
 
     struct head* h = (struct head*) helper;
-    struct branch* cur = h->cur_branch;
+    // struct branch* cur = h->cur_branch;
     struct file* files = h->tracked_files;
 
     if (files == NULL) {
