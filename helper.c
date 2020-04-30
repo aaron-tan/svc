@@ -172,6 +172,7 @@ char* get_commit_id(void* helper, char* message) {
   for (unsigned long i = 0; i < strlen(message); i++) {
     id = (id + message[i]) % 1000;
   }
+  printf("Id: %d\n", id);
 
   // Traverse backwards, so that we can traverse forwards again to get commit id.
   while (files->prev_file != NULL) {
@@ -187,8 +188,9 @@ char* get_commit_id(void* helper, char* message) {
     } else {
       id = id + 9573681;
     }
+    printf("In while: %d\n", id);
 
-    // Get unsigned byte from file name.
+    // Get unsigned byte from file name. Increasing alphabetical order.
     for (unsigned long i = 0; i < strlen(files->name); i++) {
       id = (id * (files->name[i] % 37)) % 15485863 + 1;
     }
@@ -196,6 +198,7 @@ char* get_commit_id(void* helper, char* message) {
     files = files->next_file;
   }
   sprintf(hex, "%x", id);
+  printf("End: %d\n", id);
 
   return hex;
 }

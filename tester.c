@@ -155,22 +155,10 @@ int test_example_1(void* helper) {
 
   assert(svc_add(helper, "Tests/test1.in") == -2);
 
-  char* id = svc_commit(helper, "Initial commits");
-  // char* id = get_commit_id(helper, "Initial commit");
+  char* id = svc_commit(helper, "Initial commit");
+
   printf("%s\n", id);
   assert(strcmp(id, "74cde7") == 0);
-
-  // struct head* h = (struct head*) helper;
-  // struct branch* cur = h->cur_branch;
-  // struct file* files = h->tracked_files;
-  //
-  // struct commit* active = cur->active_commit;
-  // assert(strcmp(active->commit_id, "74cde7") == 0);
-  // assert(strcmp(active->branch_name, "master") == 0);
-  // assert(strcmp(active->commit_msg, "Initial commit") == 0);
-  // assert(active->files == files);
-  // assert(active->prev_commit == NULL);
-  // assert(active->next_commit == NULL);
 
   return 0;
 }
