@@ -182,6 +182,7 @@ char* get_commit_id(void* helper, char* message) {
   // Get the commit changes.
   while (files != NULL) {
     if (files->stat == ADDED) {
+      puts("In added");
       id = id + 376591;
     } else if (files->stat == MODIFIED) {
       id = id + 85973;
@@ -192,6 +193,7 @@ char* get_commit_id(void* helper, char* message) {
 
     // Get unsigned byte from file name. Increasing alphabetical order.
     for (unsigned long i = 0; i < strlen(files->name); i++) {
+      printf("%d\n", files->name[i]);
       id = (id * (files->name[i] % 37)) % 15485863 + 1;
     }
 
