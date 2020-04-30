@@ -100,12 +100,15 @@ int check_modified(void* helper) {
       }
       temp[bytes] = 0;
 
-      files->contents = temp;
+      files->contents = realloc(files->contents, bytes + 1);
+      strcpy(files->contents, temp);
       files->stat = MODIFIED;
       files->hash = hash_file(helper, files->name);
 
       // This file is modified.
       is_modified = 1;
+
+      free(temp);
       fclose(fp);
     }
 
@@ -120,41 +123,6 @@ int check_modified(void* helper) {
 
   // Return whether there is at least one modified tracked file.
   return is_modified;
-}
-
-// Check if there are uncommitted changes.
-int check_uncommitted(void* helper) {
-  struct head* h = (struct head*) helper;
-  struct file* track_files = h->tracked_files;
-  struct branch* cur = h->cur_branch;
-  struct commit* cur_com = cur->active_commit;
-
-  // If track_files is null, there are no commits at all. return 1
-  if (track_files == NULL) {
-    return 0;
-  }
-
-  // If active commit is null, then everything in tracked files is an uncommitted change.
-  if (cur_com == NULL) {
-    return 1;
-  } else {
-
-  }
-  struct file* comm_files = cur_com->files;
-
-  while (comm_files != NULL) {
-    // Get the hash of the file.
-    int h_file = hash_file(helper, comm_files->name);
-
-    // If the hash of the commit is different to the hash of the file there are uncommitted changes.
-    if (comm_files->hash != h_file) {
-      return 1;
-    }
-
-    comm_files = comm_files->prev_file;
-  }
-
-  return 0;
 }
 
 // Used to calculate the commit id as per the algorithm in section 3.2
@@ -189,16 +157,12 @@ char* get_commit_id(void* helper, char* message) {
 
     // Get unsigned byte from file name. Increasing alphabetical order.
     for (unsigned long i = 0; i < strlen(files->name); i++) {
-      // files->name is giving me something weird on ed check that out.
-      // Could be something wrong with copying files->name in add. Test this on machine.
-      // printf("%c\n", files->name[i]);
       id = (id * (files->name[i] % 37)) % 15485863 + 1;
-      // printf("Loop the file name: %d\n", id);
     }
 
     files = files->next_file;
   }
-  sprintf(hex, "%x", id);
+  sprintf(hex, "%06x", id);
 
   return hex;
 }
