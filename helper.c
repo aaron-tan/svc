@@ -71,36 +71,34 @@ int check_modified(void* helper) {
 
   // Traverse the doubly linked list to check for modifications.
   while (files != NULL) {
-    // Open the file to get ready to read it if necessary.
-    FILE* fp = fopen(files->name, "rb");
-
-    // Check if the file exists.
-    if (fp == NULL) {
-      return -2;
-    }
 
     // Get the hash of the tracked file.
     int hash = hash_file(helper, files->name);
 
-    // Could it be possible because this is outside the if it causes problems?
+    // If hash equals to -2 the file does not exist return 0.
+    if (hash == -2) {
+      return 0;
+    }
+
     // Get the number of bytes of said file.
-    // int bytes = get_num_bytes(files->name);
-    // printf("%d\n", bytes);
+    int bytes = get_num_bytes(files->name);
 
     // Compare hashes to see if the file with the same name has been modified.
     if (files->hash != hash) {
+      // We don't have to check if it exists or not since we already did above.
+      FILE* fp = fopen(files->name, "rb");
 
       // Keep a temp array of contents first in case something goes wrong.
-      char* temp = malloc(100);
+      char* temp = malloc(bytes + 1);
 
       // Re-read the modified contents.
-      if (fread(temp, 100, 1, fp) != 1) {
+      if (fread(temp, bytes, 1, fp) != 1) {
         // If something goes wrong we just return an error.
         free(temp);
         fclose(fp);
         return -3;
       }
-      temp[100] = 0;
+      temp[bytes] = 0;
 
       files->contents = temp;
       files->stat = MODIFIED;
@@ -172,7 +170,6 @@ char* get_commit_id(void* helper, char* message) {
   for (unsigned long i = 0; i < strlen(message); i++) {
     id = (id + message[i]) % 1000;
   }
-  printf("Id: %d\n", id);
 
   // Traverse backwards, so that we can traverse forwards again to get commit id.
   while (files->prev_file != NULL) {
@@ -181,28 +178,27 @@ char* get_commit_id(void* helper, char* message) {
 
   // Get the commit changes.
   while (files != NULL) {
-    printf("%s\n", files->name);
+    // printf("%s\n", files->name);
     if (files->stat == ADDED) {
-      puts("In added");
       id = id + 376591;
     } else if (files->stat == MODIFIED) {
       id = id + 85973;
     } else {
       id = id + 9573681;
     }
-    printf("In while: %d\n", id);
 
     // Get unsigned byte from file name. Increasing alphabetical order.
     for (unsigned long i = 0; i < strlen(files->name); i++) {
-      printf("%c\n", files->name[i]);
+      // files->name is giving me something weird on ed check that out.
+      // Could be something wrong with copying files->name in add. Test this on machine.
+      // printf("%c\n", files->name[i]);
       id = (id * (files->name[i] % 37)) % 15485863 + 1;
-      printf("Loop the file name: %d\n", id);
+      // printf("Loop the file name: %d\n", id);
     }
 
     files = files->next_file;
   }
   sprintf(hex, "%x", id);
-  printf("End: %d\n", id);
 
   return hex;
 }

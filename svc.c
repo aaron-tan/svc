@@ -67,6 +67,7 @@ void cleanup(void *helper) {
       }
 
       for (int i = 0; i < (num_files - 1); i++) {
+        free(all_files[i]->name);
         free(all_files[i]->contents);
         free(all_files[i]);
       }
@@ -367,8 +368,9 @@ int svc_add(void *helper, char *file_name) {
 
     // Track this new file. Remember to free this later.
     struct file* new_file = malloc(sizeof(struct file));
-    new_file->name = file_name;
-    // Remember to free this later.
+    // Remember to free these later.
+    new_file->name = malloc(261);
+    strcpy(new_file->name, file_name);
     new_file->contents = malloc((bytes + 1));
 
     // Read file contents into contents.
@@ -430,6 +432,7 @@ int svc_rm(void *helper, char *file_name) {
           int last_hash = files->hash;
 
           // Free the file.
+          free(files->name);
           free(files->contents);
           free(files);
 
@@ -446,6 +449,7 @@ int svc_rm(void *helper, char *file_name) {
           int last_hash = files->hash;
 
           // Free the file.
+          free(files->name);
           free(files->contents);
           free(files);
 
@@ -461,6 +465,7 @@ int svc_rm(void *helper, char *file_name) {
           int last_hash = files->hash;
 
           // Free the file.
+          free(files->name);
           free(files->contents);
           free(files);
 

@@ -149,11 +149,27 @@ int test_example_1(void* helper) {
 
   assert(svc_commit(helper, "No changes") == NULL);
 
-  assert(svc_add(helper, "hello.py") == 2027);
+  // Malloc hello and test strings.
+  char* hello = malloc(20);
+  strcpy(hello, "hello.py");
 
-  assert(svc_add(helper, "Tests/test1.in") == 564);
+  char* test = malloc(20);
+  strcpy(test, "Tests/test1.in");
+  // End of malloc
 
-  assert(svc_add(helper, "Tests/test1.in") == -2);
+  // Hello.py
+  assert(svc_add(helper, hello) == 2027);
+
+  strcpy(hello, "it");
+
+  // assert(check_modified(helper) == 0);
+
+  // Tests\test1.in
+  assert(svc_add(helper, test) == 564);
+
+  strcpy(test, "it");
+
+  assert(svc_add(helper, test) == -3);
 
   char* id = svc_commit(helper, "Initial commit");
 
