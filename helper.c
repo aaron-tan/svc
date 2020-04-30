@@ -193,8 +193,9 @@ char* get_commit_id(void* helper, char* message) {
 
     // Get unsigned byte from file name. Increasing alphabetical order.
     for (unsigned long i = 0; i < strlen(files->name); i++) {
-      printf("%d\n", files->name[i]);
+      printf("%c\n", files->name[i]);
       id = (id * (files->name[i] % 37)) % 15485863 + 1;
+      printf("Loop the file name: %d\n", id);
     }
 
     files = files->next_file;
