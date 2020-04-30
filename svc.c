@@ -134,7 +134,7 @@ int hash_file(void *helper, char *file_path) {
 
 char *svc_commit(void *helper, char *message) {
     // Check whether there are no changes since the last commit.
-    if (message == NULL) {
+    if (message == NULL || !check_modified(helper)) {
       return NULL;
     }
 
@@ -142,10 +142,6 @@ char *svc_commit(void *helper, char *message) {
     struct head* h = (struct head*) helper;
     struct branch* cur = h->cur_branch;
     struct file* files = h->tracked_files;
-
-    if (files == NULL) {
-      return NULL;
-    }
 
     // Get the hexadecimal commit id.
     char* hex_id = get_commit_id(helper, message);
