@@ -181,6 +181,7 @@ char* get_commit_id(void* helper, char* message) {
 
   // Get the commit changes.
   while (files != NULL) {
+    printf("%s\n", files->name);
     if (files->stat == ADDED) {
       puts("In added");
       id = id + 376591;
