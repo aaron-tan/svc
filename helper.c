@@ -154,7 +154,6 @@ struct file** all_files(void* helper, int* n_files) {
 // Used to calculate the commit id as per the algorithm in section 3.2
 char* get_commit_id(void* helper, char* message) {
   struct head* h = (struct head*) helper;
-  struct file* files = h->tracked_files;
 
   // Remember to free this, we have to free the commit_id.
   char* hex = malloc(7);
