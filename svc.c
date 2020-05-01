@@ -45,6 +45,7 @@ void cleanup(void *helper) {
 
       for (int i = 0; i < (num_commits - 1); i++) {
         free(all_commits[i]->commit_id);
+        free(all_commits[i]->commit_msg);
         free(all_commits[i]);
       }
     }
@@ -169,7 +170,8 @@ char *svc_commit(void *helper, char *message) {
     struct commit* new_commit = malloc(sizeof(struct commit));
     new_commit->commit_id = hex_id;
     new_commit->branch_name = cur->name;
-    new_commit->commit_msg = message;
+    new_commit->commit_msg = malloc(strlen(message) + 1);
+    strcpy(new_commit->commit_msg, message);
     new_commit->files = h->tracked_files;
 
     // The previous for the new commit is the one pointed to by active_commit.
@@ -278,7 +280,7 @@ void print_commit(void *helper, char *commit_id) {
           com_file = com_file->prev_file;
         }
 
-        printf("\nTracked files: (%d)\n", h->n_tracked);
+        printf("\n    Tracked files (%d):\n", h->n_tracked);
 
         // Get the hash length and hash as a string.
         int hash_len;
