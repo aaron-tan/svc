@@ -211,7 +211,7 @@ int svc_branch(void *helper, char *branch_name) {
     struct branch* cur = h->cur_branch;
 
     // Check if there are uncommited changes.
-    if (check_modified(helper)) {
+    if (check_modified(helper) == 1) {
       return -3;
     }
 
@@ -252,7 +252,7 @@ int svc_checkout(void *helper, char *branch_name) {
     }
 
     // If there are uncommitted changes return -2.
-    if (h->tracked_files != NULL) {
+    if (check_modified(helper) == 1) {
       return -2;
     }
 

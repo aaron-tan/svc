@@ -11,6 +11,10 @@ int check_modified(void* helper);
 
 int check_uncommitted(void* helper);
 
+int files_cmp(const void* a, const void* b);
+
+struct file** all_files(void* helper, int* n_files);
+
 char* get_commit_id(void* helper, char* message);
 
 #endif

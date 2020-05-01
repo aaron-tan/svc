@@ -179,12 +179,34 @@ int test_example_1(void* helper) {
   return 0;
 }
 
+int test_example_2(void* helper) {
+  // Starting from a blank project, create two files and add them.
+  // Hash files are correct.
+  assert(svc_add(helper, "COMP2017/svc.c") == 5217);
+  assert(svc_add(helper, "COMP2017/svc.h") == 5007);
+  // assert(svc_add(helper, "hello.py") == 2027);
+  // assert(svc_add(helper, "Tests/test1.in") == 564);
+
+  int n = 1;
+  struct file** tracked = all_files(helper, &n);
+  qsort(tracked, n - 1, sizeof(struct file*), files_cmp);
+
+  char* commid = svc_commit(helper, "Initial commit");
+  printf("%s\n", commid);
+  assert(strcmp(commid, "7b3e30") == 0);
+
+  assert(svc_branch(helper, "random_branch") == 0);
+
+  assert(svc_checkout(helper, "random_branch") == 0);
+
+  return 0;
+}
+
 int main() {
     void *helper = svc_init();
 
-    assert(test_example_1(helper) == 0);
-    // assert(test_svc_add_example_1(helper) == 0);
-    // assert(test_svc_remove(helper) == 0);
+    // assert(test_example_1(helper) == 0);
+    assert(test_example_2(helper) == 0);
 
     cleanup(helper);
 

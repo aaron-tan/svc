@@ -112,10 +112,10 @@ int check_modified(void* helper) {
       fclose(fp);
     }
 
-    // We also check if there are files added. Return 1 if yes.
+    // We want to check if the files are added. Return 2 if yes to differentiate from modification.
     if (files->stat == ADDED) {
       // There has been an addition.
-      is_modified = 1;
+      is_modified = 2;
     }
 
     files = files->prev_file;
@@ -123,6 +123,32 @@ int check_modified(void* helper) {
 
   // Return whether there is at least one modified tracked file.
   return is_modified;
+}
+
+// Comparator used to sort file names alphabetically.
+int files_cmp(const void* a, const void* b) {
+  struct file* file_a = *(struct file**)a;
+  struct file* file_b = *(struct file**)b;
+  return strcasecmp(file_a->name, file_b->name);
+}
+
+// Get all of the tracked files.
+struct file** all_files(void* helper, int* n_files) {
+  struct head* h = (struct head*) helper;
+  struct file* t_files = h->tracked_files;
+
+  struct file** all_files = malloc(sizeof(struct file*));
+
+  while (t_files != NULL) {
+    all_files[*n_files - 1] = t_files;
+
+    *n_files += 1;
+    all_files = realloc(all_files, *n_files * sizeof(char*));
+
+    t_files = t_files->prev_file;
+  }
+
+  return all_files;
 }
 
 // Used to calculate the commit id as per the algorithm in section 3.2
@@ -139,30 +165,33 @@ char* get_commit_id(void* helper, char* message) {
     id = (id + message[i]) % 1000;
   }
 
-  // Traverse backwards, so that we can traverse forwards again to get commit id.
-  while (files->prev_file != NULL) {
-    files = files->prev_file;
-  }
+  // Get all the tracked files into an array and sort them.
+  int n_files = 1;
+  struct file** tracked = all_files(helper, &n_files);
+  qsort(tracked, n_files - 1, sizeof(struct file*), files_cmp);
 
-  // Get the commit changes.
-  while (files != NULL) {
-    // printf("%s\n", files->name);
-    if (files->stat == ADDED) {
+  // Traverse all files to calculate commit id.
+  for (int i = 0; i < n_files - 1; i++) {
+    if (tracked[i]->stat == ADDED) {
       id = id + 376591;
-    } else if (files->stat == MODIFIED) {
+    } else if (tracked[i]->stat == MODIFIED) {
       id = id + 85973;
     } else {
       id = id + 9573681;
     }
 
-    // Get unsigned byte from file name. Increasing alphabetical order.
-    for (unsigned long i = 0; i < strlen(files->name); i++) {
-      id = (id * (files->name[i] % 37)) % 15485863 + 1;
+    for (unsigned long j = 0; j < strlen(tracked[i]->name); j++) {
+      id = (id * (tracked[i]->name[j] % 37)) % 15485863 + 1;
     }
-
-    files = files->next_file;
   }
+
+  // Set tracked's contents to NULL since we don't want to free the tracked files yet. Just free tracked.
+  for (int i = 0; i < n_files - 1; i++) {
+    tracked[i] = NULL;
+  }
+
   sprintf(hex, "%06x", id);
+  free(tracked);
 
   return hex;
 }
