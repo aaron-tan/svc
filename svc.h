@@ -8,6 +8,7 @@ typedef enum {ADDED, MODIFIED, REMOVED, MERGED} STATUS;
 struct head {
   struct branch* cur_branch;
   struct file* tracked_files;
+  int n_tracked;
 };
 
 struct branch {

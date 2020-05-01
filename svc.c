@@ -17,6 +17,7 @@ void *svc_init(void) {
     struct head* helper = malloc(sizeof(struct head));
     helper->cur_branch = master;
     helper->tracked_files = NULL;
+    helper->n_tracked = 0;
 
     return helper;
 }
@@ -187,17 +188,127 @@ char *svc_commit(void *helper, char *message) {
 }
 
 void *get_commit(void *helper, char *commit_id) {
-    // TODO: Implement
+    if (commit_id == NULL) {
+      return NULL;
+    }
+
+    struct head* h = (struct head*) helper;
+    struct commit* cur_commit = h->cur_branch->active_commit;
+
+    while (cur_commit != NULL) {
+      if (strcmp(cur_commit->commit_id, commit_id) == 0) {
+        return cur_commit;
+      }
+
+      // Keep traversing the list.
+      cur_commit = cur_commit->prev_commit;
+    }
+
     return NULL;
 }
 
 char **get_prev_commits(void *helper, void *commit, int *n_prev) {
-    // TODO: Implement
-    return NULL;
+    if (n_prev == NULL || commit == NULL) {
+      if (n_prev == NULL) {
+        return NULL;
+      } else {
+        *n_prev = 0;
+        return NULL;
+      }
+    }
+
+    struct commit* cur_com = (struct commit*) commit;
+    char** id_list = NULL;
+    *n_prev = 0;
+
+    while (cur_com != NULL) {
+      // If prev and next commit is null this is the first commit. Break out of loop.
+      if (cur_com->prev_commit == NULL && cur_com->next_commit == NULL) {
+        break;
+      } else {
+        // Otherwise, we add this to the list.
+        // If id_list is null we start a new list.
+        if (id_list == NULL) {
+          id_list = malloc(sizeof(char*));
+          *n_prev = 0;
+        }
+
+        id_list[*n_prev] = malloc(7);
+        strcpy(id_list[*n_prev], cur_com->commit_id);
+
+        *n_prev += 1;
+        id_list = realloc(id_list, (*n_prev + 1) * sizeof(char*));
+
+        cur_com = cur_com->prev_commit;
+      }
+    }
+
+    return id_list;
 }
 
 void print_commit(void *helper, char *commit_id) {
-    // TODO: Implement
+    if (commit_id == NULL) {
+      puts("Invalid commit id");
+      return;
+    }
+
+    struct head* h = (struct head*) helper;
+    struct commit* cur_commit = h->cur_branch->active_commit;
+    struct file* t_file = h->tracked_files;
+
+    while (cur_commit != NULL) {
+      // Commit exists, print commit.
+      if (strcmp(cur_commit->commit_id, commit_id) == 0) {
+        struct file* com_file = cur_commit->files;
+        int n_files = 0;
+
+        // Print the first line.
+        printf("%s [%s]: %s\n", cur_commit->commit_id, cur_commit->branch_name, cur_commit->commit_msg);
+
+        while (com_file != NULL) {
+          if (com_file->stat == ADDED) {
+            printf("    + %s\n", com_file->name);
+          } else if (com_file->stat == REMOVED) {
+            printf("    - %s\n", com_file->name);
+          } else if (com_file->stat == MODIFIED) {
+            printf("    / %s [%d]\n", com_file->name, com_file->hash);
+          }
+
+          n_files += 1;
+          com_file = com_file->prev_file;
+        }
+
+        printf("\nTracked files: (%d)\n", h->n_tracked);
+
+        // Get the hash length and hash as a string.
+        int hash_len;
+        char* hash_str = NULL;
+
+        // Traverse all the tracked files.
+        while (t_file != NULL) {
+          // Get the length of the hash so we can malloc memory.
+          hash_len = snprintf(NULL, 0, "%d", t_file->hash);
+          hash_str = realloc(hash_str, hash_len + 1);
+
+          // Convert the int hash into str hash.
+          snprintf(hash_str, hash_len + 1, "%d", t_file->hash);
+
+          printf("    [%10s] %s\n", hash_str, t_file->name);
+
+          t_file = t_file->prev_file;
+        }
+
+        // Free hash_str.
+        free(hash_str);
+
+        return;
+      }
+
+      cur_commit = cur_commit->prev_commit;
+    }
+
+    puts("Invalid commit id");
+    return;
 }
 
 // Creates a new branch.
@@ -389,6 +500,7 @@ int svc_add(void *helper, char *file_name) {
 
     // tracked_files will always be pointing to the latest new tracked file.
     h->tracked_files = new_file;
+    h->n_tracked += 1;
 
     fclose(fp);
 

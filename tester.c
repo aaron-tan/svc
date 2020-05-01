@@ -33,6 +33,10 @@ int test_svc_branch(void* helper) {
 }
 
 int test_list_branches(void* helper) {
+  svc_add(helper, "hello.py");
+  svc_add(helper, "Tests/test1.in");
+  svc_add(helper, "COMP2017/svc.c");
+
   int* num_branches = malloc(sizeof(int));
   char** list = list_branches(helper, num_branches);
   assert(*num_branches == 4);
@@ -97,9 +101,9 @@ int test_svc_add_example_2(void* helper) {
   struct file* files = h->tracked_files;
 
   while (files != NULL) {
-    printf("%s\n", files->name);
-    printf("%s\n", files->contents);
-    files = files->next_file;
+    printf("In test: %s\n", files->name);
+    printf("In test: %s\n", files->contents);
+    files = files->prev_file;
   }
 
   return 0;
@@ -162,8 +166,6 @@ int test_example_1(void* helper) {
 
   strcpy(hello, "it");
 
-  // assert(check_modified(helper) == 0);
-
   // Tests\test1.in
   assert(svc_add(helper, test) == 564);
 
@@ -173,8 +175,23 @@ int test_example_1(void* helper) {
 
   char* id = svc_commit(helper, "Initial commit");
 
-  printf("%s\n", id);
   assert(strcmp(id, "74cde7") == 0);
+
+  void* commit = get_commit(helper, "74cde7");
+
+  int n_prev;
+  char** prev_commits = get_prev_commits(helper, commit, &n_prev);
+  assert(prev_commits == NULL);
+  assert(n_prev == 0);
+
+  print_commit(helper, "74cde7");
+
+  int n;
+  char** branches = list_branches(helper, &n);
+
+  assert(n == 1);
+
+  printf("%s\n", branches[n - 1]);
 
   return 0;
 }
@@ -205,8 +222,8 @@ int test_example_2(void* helper) {
 int main() {
     void *helper = svc_init();
 
-    // assert(test_example_1(helper) == 0);
-    assert(test_example_2(helper) == 0);
+    assert(test_example_1(helper) == 0);
+    // assert(test_example_2(helper) == 0);
 
     cleanup(helper);
 
