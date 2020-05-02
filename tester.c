@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "svc.h"
 #include "helper.h"
 
@@ -201,12 +202,6 @@ int test_example_2(void* helper) {
   // Hash files are correct.
   assert(svc_add(helper, "COMP2017/svc.c") == 5217);
   assert(svc_add(helper, "COMP2017/svc.h") == 5007);
-  // assert(svc_add(helper, "hello.py") == 2027);
-  // assert(svc_add(helper, "Tests/test1.in") == 564);
-
-  int n = 1;
-  struct file** tracked = all_files(helper, &n);
-  qsort(tracked, n - 1, sizeof(struct file*), files_cmp);
 
   char* commid = svc_commit(helper, "Initial commit");
   printf("%s\n", commid);
@@ -216,14 +211,65 @@ int test_example_2(void* helper) {
 
   assert(svc_checkout(helper, "random_branch") == 0);
 
+  FILE * f = fopen("COMP2017/svc.c", "w");
+  fputs("#include \"svc.h\"\nvoid *svc_init(void) {\n    return NULL;\n}\n", f);
+  fclose(f);
+
+  assert(svc_rm(helper, "COMP2017/svc.h") == 5007);
+
+  char* init_id = svc_commit(helper, "Implemented svc_init");
+  printf("Init_id: %s\n", init_id);
+  assert(strcmp(init_id, "73eacd") == 0);
+
+  // You realise you accidentally deleted svc.h and want to revert to initial commit.
+  remove("COMP2017/svc.h");
+
+  assert(svc_reset(helper, "7b3e30") == 0);
+
+  // Then the file COMP2017/svc.c is changed again to have the contents shown above.
+  FILE * fileptr = fopen("COMP2017/svc.c", "w");
+  fputs("#include \"svc.h\"\nvoid *svc_init(void) {\n    return NULL;\n}\n", fileptr);
+  fclose(fileptr);
+
+  char* after_reset = svc_commit(helper, "Implemented svc_init");
+  printf("After reset: %s\n", after_reset);
+  assert(strcmp(after_reset, "24829b") == 0);
+
+  void* commit = get_commit(helper, "24829b");
+
+  int n_prev;
+  char** prev_commits = get_prev_commits(helper, commit, &n_prev);
+
+  assert(n_prev == 1);
+  for (int i = 0; i < n_prev; i++) {
+    printf("Get prev commits: %s\n", prev_commits[i]);
+    assert(strcmp(prev_commits[i], "7b3e30") == 0);
+  }
+
+  assert(svc_checkout(helper, "master") == 0);
+
   return 0;
+}
+
+void rewrite() {
+  // Sleep before regenerating files.
+  // sleep(10);
+  FILE * svc_cfp = fopen("COMP2017/svc.c", "w");
+  fputs("#include \"svc.h\"\nvoid *svc_init(void) {\n    // TODO: implement\n}\n", svc_cfp);
+  fclose(svc_cfp);
+
+  FILE* svc_hfp = fopen("COMP2017/svc.h", "w");
+  fputs("#ifndef svc_h\n#define svc_h\nvoid *svc_init(void);\n#endif\n", svc_hfp);
+  fclose(svc_hfp);
 }
 
 int main() {
     void *helper = svc_init();
 
-    assert(test_example_1(helper) == 0);
-    // assert(test_example_2(helper) == 0);
+    // assert(test_example_1(helper) == 0);
+    assert(test_example_2(helper) == 0);
+
+    rewrite();
 
     cleanup(helper);
 

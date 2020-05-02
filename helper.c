@@ -170,11 +170,17 @@ char* get_commit_id(void* helper, char* message) {
 
   // Traverse all files to calculate commit id.
   for (int i = 0; i < n_files - 1; i++) {
+    if (tracked[i]->stat == ALRDY_ADD) {
+      continue;
+    }
     if (tracked[i]->stat == ADDED) {
       id = id + 376591;
-    } else if (tracked[i]->stat == MODIFIED) {
+      tracked[i]->stat = ALRDY_ADD;
+    }
+    if (tracked[i]->stat == REMOVED) {
       id = id + 85973;
-    } else {
+    }
+    if (tracked[i]->stat == MODIFIED) {
       id = id + 9573681;
     }
 

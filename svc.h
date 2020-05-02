@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-typedef enum {ADDED, MODIFIED, REMOVED, MERGED} STATUS;
+typedef enum {ADDED, MODIFIED, REMOVED, MERGED, ALRDY_ADD} STATUS;
 
 struct head {
   struct branch* cur_branch;
