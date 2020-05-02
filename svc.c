@@ -307,7 +307,7 @@ void print_commit(void *helper, char *commit_id) {
         printf("%s [%s]: %s\n", cur_commit->commit_id, cur_commit->branch_name, cur_commit->commit_msg);
 
         while (com_file != NULL) {
-          if (com_file->stat == ADDED) {
+          if (com_file->stat == ADDED || com_file->stat == ALRDY_ADD) {
             printf("    + %s\n", com_file->name);
           } else if (com_file->stat == REMOVED) {
             printf("    - %s\n", com_file->name);
