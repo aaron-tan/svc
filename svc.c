@@ -476,42 +476,6 @@ int svc_add(void *helper, char *file_name) {
       files = files->prev_file;
     }
 
-    // Think about rewriting this.
-    // There are no tracked files.
-    // if (h->tracked_files == NULL) {
-    //   // Remember to free this later.
-    //   h->tracked_files = malloc(sizeof(struct file));
-    //
-    //   // Populate the file with data.
-    //   h->tracked_files->name = file_name;
-    //   // Remember to free this later.
-    //   h->tracked_files->contents = malloc((bytes + 1));
-    //
-    //   // Read file contents into tracked_files contents.
-    //   if (fread(h->tracked_files->contents, bytes, 1, fp) != 1) {
-    //     // If something goes wrong we revert back to the original state.
-    //     free(h->tracked_files->contents);
-    //     free(h->tracked_files);
-    //     h->tracked_files = NULL;
-    //     fclose(fp);
-    //     return -3;
-    //   }
-    //   h->tracked_files->contents[bytes] = 0;
-    //
-    //   h->tracked_files->stat = ADDED;
-    //   h->tracked_files->hash = hash_file(helper, file_name);
-    //   h->tracked_files->prev_file = NULL;
-    //   h->tracked_files->next_file = NULL;
-    // } else {
-    //   files = h->tracked_files;
-    //
-    //   // Traversal the doubly linked list until we get to a NULL.
-    //   while (files->next_file != NULL) {
-    //     files = files->next_file;
-    //   }
-    //
-    // }
-
     // Track this new file. Remember to free this later.
     struct file* new_file = malloc(sizeof(struct file));
     // Remember to free these later.
@@ -565,62 +529,6 @@ int svc_rm(void *helper, char *file_name) {
         // We've gotta get stat to be removed somehow.
         files->stat = REMOVED;
         return files->hash;
-        /** Three cases: either file is at the front of the list.
-        * middle of the list or
-        * rear of the list.
-        */
-        // if (files->prev_file == NULL) {
-        //   // file is at the front of the list.
-        //   // Set the next file to be at the front.
-        //   if (files->next_file == NULL) {
-        //     h->tracked_files = files->next_file;
-        //   } else {
-        //     files->next_file->prev_file = NULL;
-        //   }
-        //
-        //   // Get its last known hash value.
-        //   int last_hash = files->hash;
-        //
-        //   // Free the file.
-        //   free(files->name);
-        //   free(files->contents);
-        //   free(files);
-        //
-        //   return last_hash;
-        // } else if (files->next_file == NULL) {
-        //   // file is at the rear of the list.
-        //   // set the prev file to be at the rear.
-        //   files->prev_file->next_file = NULL;
-        //
-        //   // Set current tracked files to the prev file.
-        //   h->tracked_files = files->prev_file;
-        //
-        //   // Get its last known hash value.
-        //   int last_hash = files->hash;
-        //
-        //   // Free the file.
-        //   free(files->name);
-        //   free(files->contents);
-        //   free(files);
-        //
-        //   return last_hash;
-        // } else {
-        //   // file is in the middle of the list.
-        //   // set the prev file's next file to be next_file.
-        //   files->prev_file->next_file = files->next_file;
-        //   // set the next file's prev file to be prev_file.
-        //   files->next_file->prev_file = files->prev_file;
-        //
-        //   // Get its last known hash value.
-        //   int last_hash = files->hash;
-        //
-        //   // Free the file.
-        //   free(files->name);
-        //   free(files->contents);
-        //   free(files);
-        //
-        //   return last_hash;
-        // }
       }
 
       files = files->prev_file;
