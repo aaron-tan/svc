@@ -561,7 +561,7 @@ int svc_rm(void *helper, char *file_name) {
 
     while (files != NULL) {
       // The file is tracked by the system.
-      if (files->hash == h_file) {
+      if (files->hash == h_file && files->stat != REMOVED) {
         // We've gotta get stat to be removed somehow.
         files->stat = REMOVED;
         return files->hash;
