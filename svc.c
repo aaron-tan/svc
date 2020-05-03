@@ -101,9 +101,9 @@ void cleanup(void *helper) {
     // }
 
     for (int i = 0; i < (num_files - 1); i++) {
-      free(all_files[i]->name);
-      free(all_files[i]->contents);
-      free(all_files[i]);
+      free(files_arr[i]->name);
+      free(files_arr[i]->contents);
+      free(files_arr[i]);
     }
     // End of cleaning up if there is some files left tracked.
 
