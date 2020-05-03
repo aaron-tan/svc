@@ -40,3 +40,44 @@ struct branch** all_branches(void* helper, int* n_branches) {
 
   return all_branches;
 }
+
+// Get all of the commits from all branches.
+struct commit** all_commits(void* helper, int* n_commits) {
+  struct head* h = (struct head*) helper;
+  struct commit* cur_commit = h->cur_branch->active_commit;
+
+  // We get all the branches first.
+  int n_branches;
+  // List branches noout does not output branch names for cleanup.
+  char** b_list = list_branches_noout(helper, &n_branches);
+
+  // Array to store all branches' commits in.
+  struct commit** all_commits = malloc(sizeof(struct commit*));
+  int commit_exists = 0;
+
+  // Checkout all the branches and store its commits into the array all_commits.
+  for (int i = 0; i < n_branches; i++) {
+    svc_checkout(helper, b_list[i]);
+
+    while (cur_commit != NULL) {
+      commit_exists = 0;
+
+      // Check if commit exists.
+      for (int i = 0; i < (*n_commits - 1); i++) {
+        if (all_commits[i] == cur_commit) {
+          commit_exists = 1;
+        }
+      }
+
+      if (!commit_exists) {
+        all_commits[*n_commits - 1] = cur_commit;
+        *n_commits += 1;
+        all_commits = realloc(all_commits, *n_commits * sizeof(struct commit*));
+      }
+
+      cur_commit = cur_commit->prev_commit;
+    }
+  }
+
+  return all_commits;
+}

@@ -29,51 +29,51 @@ void cleanup(void *helper) {
     // struct file* files = h->tracked_files;
 
     // Clean up all commits for all branches. First, we get all branch names.
-    int n_branches;
+    // int n_branches;
     // List branches noout does not output branch names for cleanup.
-    char** b_list = list_branches_noout(helper, &n_branches);
+    // char** b_list = list_branches_noout(helper, &n_branches);
 
     // Array to store all branches' commits in.
-    struct commit** all_commits = malloc(sizeof(struct commit*));
     int num_commits = 1;
-    int commit_exists = 0;
-
-    // Checkout all the branches and store its commits into the array all_commits.
-    for (int i = 0; i < n_branches; i++) {
-      svc_checkout(helper, b_list[i]);
-
-      // Traverse the commits.
-      struct commit* cur_commit = ((struct head*)helper)->cur_branch->active_commit;
-
-      while (cur_commit != NULL) {
-        commit_exists = 0;
-
-        // Check if commit exists.
-        for (int i = 0; i < (num_commits - 1); i++) {
-          if (all_commits[i] == cur_commit) {
-            commit_exists = 1;
-          }
-        }
-
-        if (!commit_exists) {
-          all_commits[num_commits - 1] = cur_commit;
-          num_commits += 1;
-          all_commits = realloc(all_commits, num_commits * sizeof(struct commit*));
-        }
-
-        cur_commit = cur_commit->prev_commit;
-      }
-    }
+    struct commit** commits_arr = all_commits(helper, &num_commits);
+    // int commit_exists = 0;
+    //
+    // // Checkout all the branches and store its commits into the array all_commits.
+    // for (int i = 0; i < n_branches; i++) {
+    //   svc_checkout(helper, b_list[i]);
+    //
+    //   // Traverse the commits.
+    //   struct commit* cur_commit = ((struct head*)helper)->cur_branch->active_commit;
+    //
+    //   while (cur_commit != NULL) {
+    //     commit_exists = 0;
+    //
+    //     // Check if commit exists.
+    //     for (int i = 0; i < (num_commits - 1); i++) {
+    //       if (all_commits[i] == cur_commit) {
+    //         commit_exists = 1;
+    //       }
+    //     }
+    //
+    //     if (!commit_exists) {
+    //       all_commits[num_commits - 1] = cur_commit;
+    //       num_commits += 1;
+    //       all_commits = realloc(all_commits, num_commits * sizeof(struct commit*));
+    //     }
+    //
+    //     cur_commit = cur_commit->prev_commit;
+    //   }
+    // }
 
     // Traverse the array and free the commits.
     for (int i = 0; i < (num_commits - 1); i++) {
-      free(all_commits[i]->commit_id);
-      free(all_commits[i]->commit_msg);
-      free(all_commits[i]->branch_name);
+      free(commits_arr[i]->commit_id);
+      free(commits_arr[i]->commit_msg);
+      free(commits_arr[i]->branch_name);
 
       // Free all the commit files.
       struct file* tempfile = NULL;
-      struct file* cur_file = all_commits[i]->files;
+      struct file* cur_file = commits_arr[i]->files;
 
       while (cur_file != NULL) {
         free(cur_file->name);
@@ -83,7 +83,7 @@ void cleanup(void *helper) {
         free(tempfile);
       }
 
-      free(all_commits[i]);
+      free(commits_arr[i]);
     }
     // End of clean up for all commits for all branches.
 
@@ -93,13 +93,6 @@ void cleanup(void *helper) {
     */
     int num_files = 1;
     struct file** files_arr = all_files(helper, &num_files);
-
-    // while (files != NULL) {
-    //   all_files[num_files - 1] = files;
-    //   num_files += 1;
-    //   all_files = realloc(all_files, num_files * sizeof(struct file*));
-    //   files = files->prev_file;
-    // }
 
     for (int i = 0; i < (num_files - 1); i++) {
       free(files_arr[i]->name);
@@ -111,16 +104,6 @@ void cleanup(void *helper) {
     // Clean up for all the branches.
     int num_branches = 1;
     struct branch** branches_arr = all_branches(helper, &num_branches);
-    // Reset cur.
-    // struct branch* cur = h->cur_branch;
-
-    // do {
-    //   all_branches[num_branches - 1] = cur;
-    //   num_branches += 1;
-    //   all_branches = realloc(all_branches, num_branches * sizeof(struct branch*));
-    //
-    //   cur = cur->next_branch;
-    // } while (cur != h->cur_branch);
 
     for (int i = 0; i < (num_branches - 1); i++) {
       free(branches_arr[i]->name);
@@ -128,8 +111,8 @@ void cleanup(void *helper) {
     }
     // End of cleaning up for all the branches.
 
-    free(all_commits);
-    free(b_list);
+    free(commits_arr);
+    // free(b_list);
     free(files_arr);
     free(branches_arr);
     free(h);
