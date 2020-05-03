@@ -25,7 +25,6 @@ void *svc_init(void) {
 
 // Free the helper data structure.
 void cleanup(void *helper) {
-    struct head* h = (struct head*) helper;
 
     // Array to store all branches' commits in.
     int num_commits = 1;
