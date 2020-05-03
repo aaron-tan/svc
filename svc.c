@@ -68,59 +68,57 @@ void cleanup(void *helper) {
     // List branches noout does not output branch names for cleanup.
     char** b_list = list_branches_noout(helper, &n_branches);
 
-    // Checkout all the branches.
+    // Array to store all branches' commits in.
+    struct commit** all_commits = malloc(sizeof(struct commit*));
+    int num_commits = 1;
+    int commit_exists = 0;
+
+    // Checkout all the branches and store its commits into the array all_commits.
     for (int i = 0; i < n_branches; i++) {
       svc_checkout(helper, b_list[i]);
 
-      // Get and free all the commits belonging to that branch.
+      // Traverse the commits.
       struct commit* cur_commit = ((struct head*)helper)->cur_branch->active_commit;
-      struct commit* tempcommit = NULL;
 
       while (cur_commit != NULL) {
-        // If the current commit belongs to this branch free it.
-        if (strcmp(cur_commit->branch_name, b_list[i]) == 0) {
-          free(cur_commit->commit_id);
-          free(cur_commit->commit_msg);
-          free(cur_commit->branch_name);
+        commit_exists = 0;
 
-          // Free all the commit files.
-          // Temp variable used to free the files.
-          struct file* tempfile = NULL;
-          struct file* cur_file = cur_commit->files;
-
-          while (cur_file != NULL) {
-            free(cur_file->name);
-            free(cur_file->contents);
-            tempfile = cur_file;
-            cur_file = cur_file->prev_file;
-            free(tempfile);
+        // Check if commit exists.
+        for (int i = 0; i < (num_commits - 1); i++) {
+          if (all_commits[i] == cur_commit) {
+            commit_exists = 1;
           }
-
-          // Set a temp var so we can free cur_commit and move to the previous commit.
-          tempcommit = cur_commit;
-          cur_commit = cur_commit->prev_commit;
-
-          // Disconnect the cur_commit contained in tempcommit.
-          // Three cases: either tempcommit is at the front, rear or middle of the list.
-          if (tempcommit->prev_commit == NULL && tempcommit->next_commit != NULL) {
-            tempcommit->next_commit->prev_commit = NULL;
-          }
-
-          if (tempcommit->prev_commit != NULL && tempcommit->next_commit == NULL) {
-            tempcommit->prev_commit->next_commit = NULL;
-          }
-
-          if (tempcommit->prev_commit != NULL && tempcommit->next_commit != NULL) {
-            tempcommit->prev_commit->next_commit = tempcommit->next_commit;
-            tempcommit->next_commit->prev_commit = tempcommit->prev_commit;
-          }
-
-          free(tempcommit);
-        } else {
-          cur_commit = cur_commit->prev_commit;
         }
+
+        if (!commit_exists) {
+          all_commits[num_commits - 1] = cur_commit;
+          num_commits += 1;
+          all_commits = realloc(all_commits, num_commits * sizeof(struct commit*));
+        }
+
+        cur_commit = cur_commit->prev_commit;
+      }
+    }
+
+    // Traverse the array and free the commits.
+    for (int i = 0; i < (num_commits - 1); i++) {
+      free(all_commits[i]->commit_id);
+      free(all_commits[i]->commit_msg);
+      free(all_commits[i]->branch_name);
+
+      // Free all the commit files.
+      struct file* tempfile = NULL;
+      struct file* cur_file = all_commits[i]->files;
+
+      while (cur_file != NULL) {
+        free(cur_file->name);
+        free(cur_file->contents);
+        tempfile = cur_file;
+        cur_file = cur_file->prev_file;
+        free(tempfile);
       }
 
+      free(all_commits[i]);
     }
     // End of clean up for all commits for all branches.
 
@@ -170,7 +168,7 @@ void cleanup(void *helper) {
     }
     // End of cleaning up for all the branches.
 
-    // free(all_commits);
+    free(all_commits);
     free(b_list);
     free(all_files);
     free(all_branches);
