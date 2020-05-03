@@ -508,16 +508,17 @@ int svc_add(void *helper, char *file_name) {
     strcpy(new_file->name, file_name);
     new_file->contents = malloc((bytes + 1));
 
+    fread(new_file->contents, bytes, 1, fp);
     // Read file contents into contents.
-    if (fread(new_file->contents, bytes, 1, fp) != 1) {
-      puts("Goes in here");
-      // If something goes wrong we revert back to the original state.
-      free(new_file->name);
-      free(new_file->contents);
-      free(new_file);
-      fclose(fp);
-      return -3;
-    }
+    // if (fread(new_file->contents, bytes, 1, fp) != 1) {
+    //   puts("Goes in here");
+    //   // If something goes wrong we revert back to the original state.
+    //   free(new_file->name);
+    //   free(new_file->contents);
+    //   free(new_file);
+    //   fclose(fp);
+    //   return -3;
+    // }
     new_file->contents[bytes] = 0;
 
     new_file->stat = ADDED;
