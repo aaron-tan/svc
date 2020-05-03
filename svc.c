@@ -129,22 +129,17 @@ void cleanup(void *helper) {
     struct file** all_files = malloc(sizeof(struct file*));
     int num_files = 1;
 
-    if (files != NULL) {
+    while (files != NULL) {
       all_files[num_files - 1] = files;
       num_files += 1;
+      all_files = realloc(all_files, num_files * sizeof(struct file*));
+      files = files->prev_file;
+    }
 
-      while (files->prev_file != NULL) {
-        files = files->prev_file;
-        all_files = realloc(all_files, num_files * sizeof(struct file*));
-        all_files[num_files - 1] = files;
-        num_files += 1;
-      }
-
-      for (int i = 0; i < (num_files - 1); i++) {
-        free(all_files[i]->name);
-        free(all_files[i]->contents);
-        free(all_files[i]);
-      }
+    for (int i = 0; i < (num_files - 1); i++) {
+      free(all_files[i]->name);
+      free(all_files[i]->contents);
+      free(all_files[i]);
     }
     // End of cleaning up if there is some files left tracked.
 
