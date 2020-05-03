@@ -386,7 +386,8 @@ int svc_branch(void *helper, char *branch_name) {
 
     struct head* h = (struct head*) helper;
     struct branch* cur = h->cur_branch;
-
+    int ret = check_modified(helper);
+    printf("Check modified returns: %d\n", ret);
     // Check if there are uncommited changes.
     if (check_modified(helper) == 1) {
       return -3;
@@ -445,7 +446,6 @@ int svc_checkout(void *helper, char *branch_name) {
 }
 
 char **list_branches(void *helper, int *n_branches) {
-    // n_branches is null.
     if (n_branches == NULL) {
       return NULL;
     }
@@ -493,7 +493,6 @@ int svc_add(void *helper, char *file_name) {
 
     // Check if the file has already been added.
     while (files != NULL) {
-      // Compare hashes is perhaps more accurate.
       // Use the hashes to determine if a file has been modified.
       if (files->hash == h_file) {
         return -2;
@@ -509,16 +508,7 @@ int svc_add(void *helper, char *file_name) {
     new_file->contents = malloc((bytes + 1));
 
     fread(new_file->contents, bytes, 1, fp);
-    // Read file contents into contents.
-    // if (fread(new_file->contents, bytes, 1, fp) != 1) {
-    //   puts("Goes in here");
-    //   // If something goes wrong we revert back to the original state.
-    //   free(new_file->name);
-    //   free(new_file->contents);
-    //   free(new_file);
-    //   fclose(fp);
-    //   return -3;
-    // }
+
     new_file->contents[bytes] = 0;
 
     new_file->stat = ADDED;

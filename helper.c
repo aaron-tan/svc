@@ -87,6 +87,15 @@ char **list_branches_noout(void *helper, int *n_branches) {
     return branch_list;
 }
 
+// Function to check for uncommitted changes. If yes, return 1. Else, return 0.
+// int uncommitted_changes(void* helper) {
+//   struct head* h = (struct head*) helper;
+//   struct file* t_files = h->tracked_files;
+//   struct commit* cur_commit = h->cur_branch->active_commit;
+//
+//
+// }
+
 /** Check all the tracked files and see if there is a modified file.
 * If there is at least one modified file then we return 1
 * otherwise return 0.

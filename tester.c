@@ -253,6 +253,23 @@ int test_example_2(void* helper) {
   return 0;
 }
 
+int test_uncommitted(void* helper) {
+  assert(svc_add(helper, "COMP2017/svc.c") == 5217);
+  assert(svc_add(helper, "COMP2017/svc.h") == 5007);
+
+  char* commid = svc_commit(helper, "Initial commit");
+  printf("%s\n", commid);
+  assert(strcmp(commid, "7b3e30") == 0);
+
+  FILE * f = fopen("COMP2017/svc.c", "w");
+  fputs("#include \"svc.h\"\nvoid *svc_init(void) {\n    return NULL;\n}\n", f);
+  fclose(f);
+
+  assert(svc_branch(helper, "random_branch") == -3);
+
+  return 0;
+}
+
 void rewrite() {
   // Sleep before regenerating files.
   // sleep(10);
@@ -269,7 +286,8 @@ int main() {
     void *helper = svc_init();
 
     // assert(test_example_1(helper) == 0);
-    assert(test_example_2(helper) == 0);
+    // assert(test_example_2(helper) == 0);
+    assert(test_uncommitted(helper) == 0);
 
     rewrite();
 
