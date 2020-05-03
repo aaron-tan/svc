@@ -248,6 +248,12 @@ int test_example_2(void* helper) {
 
   assert(svc_checkout(helper, "master") == 0);
 
+  // Free all allocated memory.
+  for (int i = 0; i < n_prev; i++) {
+    free(prev_commits[i]);
+  }
+  free(prev_commits);
+
   return 0;
 }
 

@@ -58,9 +58,39 @@ int branch_exist(void* helper, char* branch_name) {
   return 0;
 }
 
+/** List all branches without printing name. Used in the cleanup function.
+* Identical to actual list_branches except it does not print branch names.
+*/
+char **list_branches_noout(void *helper, int *n_branches) {
+    // n_branches is null.
+    if (n_branches == NULL) {
+      return NULL;
+    }
+
+    int n = 1;
+    char** branch_list = malloc(sizeof(char*));
+
+    struct head* h = (struct head*) helper;
+    struct branch* cur = h->cur_branch;
+
+    do {
+      branch_list[n - 1] = cur->name;
+
+      n += 1;
+      branch_list = realloc(branch_list, n * sizeof(char*));
+
+      cur = cur->next_branch;
+    } while (cur != h->cur_branch);
+
+    *n_branches = n - 1;
+
+    return branch_list;
+}
+
 /** Check all the tracked files and see if there is a modified file.
 * If there is at least one modified file then we return 1
 * otherwise return 0.
+* Need to implement if (files->stat == REMOVED) skip over it.
 */
 int check_modified(void* helper) {
   struct head* h = (struct head*) helper;

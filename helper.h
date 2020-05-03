@@ -7,6 +7,8 @@ int get_num_bytes(char* file_name);
 
 int branch_exist(void* helper, char* branch_name);
 
+char **list_branches_noout(void *helper, int *n_branches);
+
 int check_modified(void* helper);
 
 int check_uncommitted(void* helper);
