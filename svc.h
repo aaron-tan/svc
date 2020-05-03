@@ -11,12 +11,17 @@ struct head {
   int n_tracked;
 };
 
+// Struct branch is implemented as a circular linked list.
 struct branch {
   char* name;
   struct commit* active_commit;
   struct branch* next_branch;
 };
 
+/** Struct commit is implemented as a doubly linked list.
+* The most recent commit is pointed to by cur_branch->active_commit
+* The most recent commit will have next_commit == NULL.
+*/
 struct commit {
   char* commit_id;
   char* branch_name;
@@ -26,6 +31,9 @@ struct commit {
   struct commit* next_commit;
 };
 
+/** Struct file is implemented as a doubly linked list.
+* The most recently added/committed file will have next_commit == NULL.
+*/
 struct file {
   char* name;
   char* contents;

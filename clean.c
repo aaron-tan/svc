@@ -4,7 +4,12 @@
 #include "helper.h"
 #include "svc.h"
 
-// Get all of the tracked files.
+/** This file contains all the helper functions used in
+* the cleanup function. They all return a dynamically allocated array
+* with all files, branches, commits etc. Then they are freed in cleanup.
+**/
+
+// Get all of the tracked files and return an array.
 struct file** all_files(void* helper, int* n_files) {
   struct head* h = (struct head*) helper;
   struct file* t_files = h->tracked_files;
@@ -23,7 +28,7 @@ struct file** all_files(void* helper, int* n_files) {
   return all_files;
 }
 
-// Get all of the branches.
+// Get all of the branches and return an array.
 struct branch** all_branches(void* helper, int* n_branches) {
   struct head* h = (struct head*) helper;
   struct branch* cur_branch = h->cur_branch;
@@ -41,7 +46,7 @@ struct branch** all_branches(void* helper, int* n_branches) {
   return all_branches;
 }
 
-// Get all of the commits from all branches.
+// Get all of the commits from all branches and return an array.
 struct commit** all_commits(void* helper, int* n_commits) {
   struct head* h = (struct head*) helper;
   struct commit* cur_commit = h->cur_branch->active_commit;

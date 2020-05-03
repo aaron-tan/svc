@@ -5,9 +5,10 @@
 #include "clean.h"
 #include "svc.h"
 
-/** This file contains all the helper functions I will be using in svc.c */
+/** This file contains all the helper functions used in svc.c */
 
-// Check if a string given is invalid for branch name.
+// Check if a string given is invalid for a given branch name.
+// Utilised in svc_branch.
 int check_invalid(char* str) {
   while (*str) {
     // If str contains at least one of these ascii. it is invalid.
@@ -44,7 +45,7 @@ int get_num_bytes(char* file_name) {
   return num_bytes;
 }
 
-// Check if a branch exists.
+// Check if a branch exists. Utilised in svc_branch.
 int branch_exist(void* helper, char* branch_name) {
   struct head* h = (struct head*) helper;
   struct branch* b = h->cur_branch;
@@ -91,7 +92,6 @@ char **list_branches_noout(void *helper, int *n_branches) {
 /** Check all the tracked files and see if there is a modified file.
 * If there is at least one modified file then we return 1
 * otherwise return 0.
-* Need to implement if (files->stat == REMOVED) skip over it.
 */
 int check_modified(void* helper) {
   struct head* h = (struct head*) helper;

@@ -26,44 +26,10 @@ void *svc_init(void) {
 // Free the helper data structure.
 void cleanup(void *helper) {
     struct head* h = (struct head*) helper;
-    // struct file* files = h->tracked_files;
-
-    // Clean up all commits for all branches. First, we get all branch names.
-    // int n_branches;
-    // List branches noout does not output branch names for cleanup.
-    // char** b_list = list_branches_noout(helper, &n_branches);
 
     // Array to store all branches' commits in.
     int num_commits = 1;
     struct commit** commits_arr = all_commits(helper, &num_commits);
-    // int commit_exists = 0;
-    //
-    // // Checkout all the branches and store its commits into the array all_commits.
-    // for (int i = 0; i < n_branches; i++) {
-    //   svc_checkout(helper, b_list[i]);
-    //
-    //   // Traverse the commits.
-    //   struct commit* cur_commit = ((struct head*)helper)->cur_branch->active_commit;
-    //
-    //   while (cur_commit != NULL) {
-    //     commit_exists = 0;
-    //
-    //     // Check if commit exists.
-    //     for (int i = 0; i < (num_commits - 1); i++) {
-    //       if (all_commits[i] == cur_commit) {
-    //         commit_exists = 1;
-    //       }
-    //     }
-    //
-    //     if (!commit_exists) {
-    //       all_commits[num_commits - 1] = cur_commit;
-    //       num_commits += 1;
-    //       all_commits = realloc(all_commits, num_commits * sizeof(struct commit*));
-    //     }
-    //
-    //     cur_commit = cur_commit->prev_commit;
-    //   }
-    // }
 
     // Traverse the array and free the commits.
     for (int i = 0; i < (num_commits - 1); i++) {
@@ -87,10 +53,7 @@ void cleanup(void *helper) {
     }
     // End of clean up for all commits for all branches.
 
-    /** Clean up for if there is something staging.
-    * After calling svc_add without svc_rm there is something
-    * in tracked_files, so we clean it up.
-    */
+    // Clean up all the files in staging.
     int num_files = 1;
     struct file** files_arr = all_files(helper, &num_files);
 
@@ -112,7 +75,6 @@ void cleanup(void *helper) {
     // End of cleaning up for all the branches.
 
     free(commits_arr);
-    // free(b_list);
     free(files_arr);
     free(branches_arr);
     free(h);
@@ -174,7 +136,7 @@ char *svc_commit(void *helper, char *message) {
 
     new_commit->commit_msg = malloc(strlen(message) + 1);
     strcpy(new_commit->commit_msg, message);
-    // new_commit->files = h->tracked_files;
+
     // Commit the files into the commit.
     new_commit->files = malloc(sizeof(struct file));
 
@@ -631,6 +593,7 @@ char *svc_merge(void *helper, char *branch_name, struct resolution *resolutions,
       puts("Changes must be committed");
       return NULL;
     }
+    // Had no time left to complete this function. So only the bare checks were performed.
 
     return NULL;
 }
