@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "svc.h"
 #include "helper.h"
+#include "clean.h"
 
 // Initialise the data structures and return a ptr to the memory.
 void *svc_init(void) {
@@ -108,29 +109,29 @@ void cleanup(void *helper) {
     // End of cleaning up if there is some files left tracked.
 
     // Clean up for all the branches.
-    struct branch** all_branches = malloc(sizeof(struct branch*));
     int num_branches = 1;
+    struct branch** branches_arr = all_branches(helper, &num_branches);
     // Reset cur.
-    struct branch* cur = h->cur_branch;
+    // struct branch* cur = h->cur_branch;
 
-    do {
-      all_branches[num_branches - 1] = cur;
-      num_branches += 1;
-      all_branches = realloc(all_branches, num_branches * sizeof(struct branch*));
-
-      cur = cur->next_branch;
-    } while (cur != h->cur_branch);
+    // do {
+    //   all_branches[num_branches - 1] = cur;
+    //   num_branches += 1;
+    //   all_branches = realloc(all_branches, num_branches * sizeof(struct branch*));
+    //
+    //   cur = cur->next_branch;
+    // } while (cur != h->cur_branch);
 
     for (int i = 0; i < (num_branches - 1); i++) {
-      free(all_branches[i]->name);
-      free(all_branches[i]);
+      free(branches_arr[i]->name);
+      free(branches_arr[i]);
     }
     // End of cleaning up for all the branches.
 
     free(all_commits);
     free(b_list);
     free(files_arr);
-    free(all_branches);
+    free(branches_arr);
     free(h);
 }
 

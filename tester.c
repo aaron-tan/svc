@@ -286,8 +286,8 @@ int main() {
     void *helper = svc_init();
 
     // assert(test_example_1(helper) == 0);
-    // assert(test_example_2(helper) == 0);
-    assert(test_uncommitted(helper) == 0);
+    assert(test_example_2(helper) == 0);
+    // assert(test_uncommitted(helper) == 0);
 
     rewrite();
 

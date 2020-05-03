@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "helper.h"
+#include "clean.h"
 #include "svc.h"
 
 /** This file contains all the helper functions I will be using in svc.c */
@@ -160,25 +161,6 @@ int files_cmp(const void* a, const void* b) {
   struct file* file_a = *(struct file**)a;
   struct file* file_b = *(struct file**)b;
   return strcasecmp(file_a->name, file_b->name);
-}
-
-// Get all of the tracked files.
-struct file** all_files(void* helper, int* n_files) {
-  struct head* h = (struct head*) helper;
-  struct file* t_files = h->tracked_files;
-
-  struct file** all_files = malloc(sizeof(struct file*));
-
-  while (t_files != NULL) {
-    all_files[*n_files - 1] = t_files;
-
-    *n_files += 1;
-    all_files = realloc(all_files, *n_files * sizeof(char*));
-
-    t_files = t_files->prev_file;
-  }
-
-  return all_files;
 }
 
 // Used to calculate the commit id as per the algorithm in section 3.2
