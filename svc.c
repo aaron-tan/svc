@@ -418,7 +418,7 @@ int svc_branch(void *helper, char *branch_name) {
 
     } while (cur != h->cur_branch);
 
-    return 0;
+    return -3;
 }
 
 int svc_checkout(void *helper, char *branch_name) {
