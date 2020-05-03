@@ -386,8 +386,7 @@ int svc_branch(void *helper, char *branch_name) {
 
     struct head* h = (struct head*) helper;
     struct branch* cur = h->cur_branch;
-    int ret = check_modified(helper);
-    printf("Check modified returns: %d\n", ret);
+
     // Check if there are uncommited changes.
     if (check_modified(helper) == 1 || check_modified(helper) == 2) {
       return -3;
