@@ -341,8 +341,8 @@ char **get_prev_commits(void *helper, void *commit, int *n_prev) {
         id_list = malloc(sizeof(char*));
       }
 
-      id_list[*n_prev] = malloc(7);
-      strcpy(id_list[*n_prev], cur_com->commit_id);
+      id_list[*n_prev] = cur_com->commit_id;
+      // strcpy(id_list[*n_prev], cur_com->commit_id);
 
       *n_prev += 1;
       id_list = realloc(id_list, (*n_prev + 1) * sizeof(char*));
