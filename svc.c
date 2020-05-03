@@ -389,7 +389,7 @@ int svc_branch(void *helper, char *branch_name) {
     int ret = check_modified(helper);
     printf("Check modified returns: %d\n", ret);
     // Check if there are uncommited changes.
-    if (check_modified(helper) == 1) {
+    if (check_modified(helper) == 1 || check_modifed(helper) == 2) {
       return -3;
     }
 
@@ -418,7 +418,7 @@ int svc_branch(void *helper, char *branch_name) {
 
     } while (cur != h->cur_branch);
 
-    return -3;
+    return 0;
 }
 
 int svc_checkout(void *helper, char *branch_name) {
