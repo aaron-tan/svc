@@ -27,42 +27,6 @@ void cleanup(void *helper) {
     struct head* h = (struct head*) helper;
     struct file* files = h->tracked_files;
 
-    // Clean up all the commits in the current branch.
-    // struct commit** all_commits = malloc(sizeof(struct commit*));
-    // int num_commits = 1;
-    // if (commits != NULL) {
-    //   all_commits[num_commits - 1] = commits;
-    //   num_commits += 1;
-    //
-    //   while (commits->prev_commit != NULL) {
-    //     commits = commits->prev_commit;
-    //     all_commits = realloc(all_commits, num_commits * sizeof(struct commit*));
-    //     all_commits[num_commits - 1] = commits;
-    //     num_commits += 1;
-    //   }
-    //
-    //   for (int i = 0; i < (num_commits - 1); i++) {
-    //     free(all_commits[i]->commit_id);
-    //     free(all_commits[i]->commit_msg);
-    //
-    //     // Free all the commit files.
-    //     // Temp variable used to free the files.
-    //     struct file* tempfile = NULL;
-    //     struct file* cur_file = all_commits[i]->files;
-    //
-    //     while (cur_file != NULL) {
-    //       free(cur_file->name);
-    //       free(cur_file->contents);
-    //       tempfile = cur_file;
-    //       cur_file = cur_file->prev_file;
-    //       free(tempfile);
-    //     }
-    //
-    //     free(all_commits[i]);
-    //   }
-    // }
-    // End of cleaning up for all commits.
-
     // Clean up all commits for all branches. First, we get all branch names.
     int n_branches;
     // List branches noout does not output branch names for cleanup.
@@ -220,8 +184,10 @@ char *svc_commit(void *helper, char *message) {
     // Create the commit.
     struct commit* new_commit = malloc(sizeof(struct commit));
     new_commit->commit_id = hex_id;
+
     new_commit->branch_name = malloc(51);
     strcpy(new_commit->branch_name, cur->name);
+
     new_commit->commit_msg = malloc(strlen(message) + 1);
     strcpy(new_commit->commit_msg, message);
     // new_commit->files = h->tracked_files;
@@ -545,6 +511,7 @@ int svc_add(void *helper, char *file_name) {
     // Read file contents into contents.
     if (fread(new_file->contents, bytes, 1, fp) != 1) {
       // If something goes wrong we revert back to the original state.
+      free(new_file->name);
       free(new_file->contents);
       free(new_file);
       fclose(fp);
