@@ -91,7 +91,7 @@ void cleanup(void *helper) {
     * in tracked_files, so we clean it up.
     */
     int num_files = 1;
-    struct file** all_files = all_files(helper, &num_files);
+    struct file** files_arr = all_files(helper, &num_files);
 
     // while (files != NULL) {
     //   all_files[num_files - 1] = files;
@@ -129,7 +129,7 @@ void cleanup(void *helper) {
 
     free(all_commits);
     free(b_list);
-    free(all_files);
+    free(files_arr);
     free(all_branches);
     free(h);
 }
