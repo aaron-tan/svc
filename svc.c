@@ -634,6 +634,8 @@ int svc_reset(void *helper, char *commit_id) {
 char *svc_merge(void *helper, char *branch_name, struct resolution *resolutions, int n_resolutions) {
     struct head* h = (struct head*) helper;
     struct branch* cur_branch = h->cur_branch;
+    int ret = check_modified(helper);
+    printf("Check modified: %d\n", ret);
 
     if (branch_name == NULL) {
       puts("Invalid branch name");
@@ -647,7 +649,7 @@ char *svc_merge(void *helper, char *branch_name, struct resolution *resolutions,
     } else if (check_modified(helper) == 1 || check_modified(helper) == 2) {
       puts("Changes must be committed");
       return NULL;
-    } else {
-      return NULL;
     }
+
+    return NULL;
 }
