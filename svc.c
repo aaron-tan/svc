@@ -430,7 +430,7 @@ int svc_checkout(void *helper, char *branch_name) {
     }
 
     // If there are uncommitted changes return -2.
-    if (check_modified(helper) == 1) {
+    if (check_modified(helper) == 1 || check_modified(helper) == 2) {
       return -2;
     }
 
