@@ -90,15 +90,15 @@ void cleanup(void *helper) {
     * After calling svc_add without svc_rm there is something
     * in tracked_files, so we clean it up.
     */
-    struct file** all_files = malloc(sizeof(struct file*));
     int num_files = 1;
+    struct file** all_files = all_files(helper, &num_files);
 
-    while (files != NULL) {
-      all_files[num_files - 1] = files;
-      num_files += 1;
-      all_files = realloc(all_files, num_files * sizeof(struct file*));
-      files = files->prev_file;
-    }
+    // while (files != NULL) {
+    //   all_files[num_files - 1] = files;
+    //   num_files += 1;
+    //   all_files = realloc(all_files, num_files * sizeof(struct file*));
+    //   files = files->prev_file;
+    // }
 
     for (int i = 0; i < (num_files - 1); i++) {
       free(all_files[i]->name);
@@ -364,7 +364,6 @@ void print_commit(void *helper, char *commit_id) {
           t_file = t_file->prev_file;
         }
 
-        // Free hash_str.
         free(hash_str);
 
         return;
@@ -634,8 +633,6 @@ int svc_reset(void *helper, char *commit_id) {
 char *svc_merge(void *helper, char *branch_name, struct resolution *resolutions, int n_resolutions) {
     struct head* h = (struct head*) helper;
     struct branch* cur_branch = h->cur_branch;
-    int ret = check_modified(helper);
-    printf("Check modified: %d\n", ret);
 
     if (branch_name == NULL) {
       puts("Invalid branch name");
