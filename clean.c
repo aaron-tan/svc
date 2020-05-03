@@ -79,5 +79,7 @@ struct commit** all_commits(void* helper, int* n_commits) {
     }
   }
 
+  free(b_list);
+
   return all_commits;
 }
