@@ -25,7 +25,7 @@ void *svc_init(void) {
 // Free the helper data structure.
 void cleanup(void *helper) {
     struct head* h = (struct head*) helper;
-    struct file* files = h->tracked_files;
+    // struct file* files = h->tracked_files;
 
     // Clean up all commits for all branches. First, we get all branch names.
     int n_branches;
