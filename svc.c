@@ -642,8 +642,12 @@ char *svc_merge(void *helper, char *branch_name, struct resolution *resolutions,
       puts("Branch not found");
       return NULL;
     } else if (strcmp(cur_branch->name, branch_name) == 0) {
-      puts("Cannot merge with itself");
+      puts("Cannot merge a branch with itself");
+      return NULL;
+    } else if (check_modified(helper) == 1 || check_modified(helper) == 2) {
+      puts("Changes must be committed");
+      return NULL;
+    } else {
       return NULL;
     }
-    return NULL;
 }
