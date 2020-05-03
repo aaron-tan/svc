@@ -510,6 +510,7 @@ int svc_add(void *helper, char *file_name) {
 
     // Read file contents into contents.
     if (fread(new_file->contents, bytes, 1, fp) != 1) {
+      puts("Goes in here");
       // If something goes wrong we revert back to the original state.
       free(new_file->name);
       free(new_file->contents);
@@ -641,6 +642,18 @@ int svc_reset(void *helper, char *commit_id) {
 }
 
 char *svc_merge(void *helper, char *branch_name, struct resolution *resolutions, int n_resolutions) {
-    // TODO: Implement
+    struct head* h = (struct head*) helper;
+    struct branch* cur_branch = h->cur_branch;
+
+    if (branch_name == NULL) {
+      puts("Invalid branch name");
+      return NULL;
+    } else if (!branch_exist(helper, branch_name)) {
+      puts("Branch not found");
+      return NULL;
+    } else if (strcmp(cur_branch->name, branch_name) == 0) {
+      puts("Cannot merge with itself");
+      return NULL;
+    }
     return NULL;
 }
