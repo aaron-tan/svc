@@ -9,6 +9,7 @@ OBJ=tester.o svc.o helper.o clean.o
 
 tester: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
+	rm *.o
 
 clean:
 	rm *.o
