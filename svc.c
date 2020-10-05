@@ -2,11 +2,24 @@
 #include <string.h>
 #include <unistd.h>
 #include "svc.h"
-#include "helper.h"
-#include "clean.h"
+#include "utils/helper.h"
+#include "utils/clean.h"
+#include "core/track.h"
 
 // Initialise the data structures and return a ptr to the memory.
 void *svc_init(void) {
+    // Create a directory containing commit, branch and head information.
+    create_dir(".svc/", S_IRWXU);
+
+    // Create a directory HEAD, this contains patches for tracked files.
+    create_dir(".svc/HEAD", S_IRWXU);
+
+    // Directory contains commits made by each branch.
+    create_dir(".svc/branches", S_IRWXU);
+
+    // Create a directory for the master branch.
+    create_dir(".svc/branches/master", S_IRWXU);
+
     // Branches will be stored as a circular linked list.
     struct branch* master = malloc(sizeof(struct branch));
     master->name = malloc(51);
@@ -19,6 +32,7 @@ void *svc_init(void) {
     helper->cur_branch = master;
     helper->tracked_files = NULL;
     helper->n_tracked = 0;
+    helper->head_fp = fopen(".svc/HEAD/", "w+");
 
     return helper;
 }
@@ -324,7 +338,7 @@ void print_commit(void *helper, char *commit_id) {
 
 // Creates a new branch.
 int svc_branch(void *helper, char *branch_name) {
-    // Do some initial checks.
+    // Do some initial checks and check if branch name is invalid.
     if (branch_name == NULL || check_invalid(branch_name)) {
       return -1;
     }
@@ -424,6 +438,11 @@ int svc_add(void *helper, char *file_name) {
     if (access(file_name, F_OK) == -1) {
       return -3;
     }
+
+    // Track the file
+    int hash = hash_file(helper, file_name);
+    FILE* tracker = create_diff_file(hash, file_name);
+    copy_file(hash, file_name);
 
     FILE* fp = fopen(file_name, "rb");
     int bytes = get_num_bytes(file_name);

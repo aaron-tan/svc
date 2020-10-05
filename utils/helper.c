@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include "helper.h"
 #include "clean.h"
-#include "svc.h"
+#include "../svc.h"
 
 /** This file contains all the helper functions used in svc.c */
 
@@ -210,4 +210,28 @@ char* get_commit_id(void* helper, char* message) {
   free(tracked);
 
   return hex;
+}
+
+void create_dir(char* dir_name, mode_t mode) {
+  int ret_val = mkdir(dir_name, mode);
+  if (ret_val < 0) {
+    if (errno == EEXIST) {
+      return;
+    } else {
+      fprintf(stderr, "Could not create directory\n");
+    }
+  }
+
+  return;
+}
+
+long get_file_size(char* file_name) {
+  struct stat sb;
+
+  if (stat(file_name, &sb) < 0) {
+    perror("Stat error\n");
+    exit(EXIT_FAILURE);
+  }
+
+  return sb.st_size;
 }
