@@ -11,9 +11,6 @@ void *svc_init(void) {
     // Create a directory containing commit, branch and head information.
     create_dir(".svc/", S_IRWXU);
 
-    // Create a directory HEAD, this contains patches for tracked files.
-    create_dir(".svc/HEAD", S_IRWXU);
-
     // Directory contains commits made by each branch.
     create_dir(".svc/branches", S_IRWXU);
 
@@ -32,7 +29,11 @@ void *svc_init(void) {
     helper->cur_branch = master;
     helper->tracked_files = NULL;
     helper->n_tracked = 0;
-    helper->head_fp = fopen(".svc/HEAD/", "w+");
+    helper->head_fp = ".svc/HEAD";
+
+    FILE* headp = fopen(helper->head_fp, "w+");
+    fwrite("master", 1, 7, headp);
+    fclose(headp);
 
     return helper;
 }
@@ -429,6 +430,18 @@ char **list_branches(void *helper, int *n_branches) {
     return branch_list;
 }
 
+char* current_branch(void* helper) {
+  struct head* h = (struct head*) helper;
+  FILE* headp = fopen(h->head_fp, "r");
+
+  long fsize = get_file_size(h->head_fp);
+  char* cur_branch = malloc(fsize + 1);
+  fread(cur_branch, 1, fsize, headp);
+
+  fclose(headp);
+  return cur_branch;
+}
+
 int svc_add(void *helper, char *file_name) {
     if (file_name == NULL) {
       return -1;
@@ -439,10 +452,18 @@ int svc_add(void *helper, char *file_name) {
       return -3;
     }
 
+    // Get the current branch.
+    char* curb = current_branch(helper);
+    char* file_path = malloc(14 + strlen(curb) + 1);
+    // file_path = ".svc/branches";
+    sprintf(file_path, "%s/%s", ".svc/branches", curb);
+
     // Track the file
     int hash = hash_file(helper, file_name);
-    FILE* tracker = create_diff_file(hash, file_name);
-    copy_file(hash, file_name);
+    FILE* tracker = create_diff_file(hash, file_path, file_name);
+
+    // Create a copy of the file
+    copy_file(hash, file_path, file_name);
 
     FILE* fp = fopen(file_name, "rb");
     int bytes = get_num_bytes(file_name);

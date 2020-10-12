@@ -5,7 +5,7 @@
 #include "../utils/helper.h"
 #include "track.h"
 
-void copy_file(int hash_file, char* file_name) {
+void copy_file(int hash_file, char* file_path, char* file_name) {
   // Convert the hash into a string and also get the length
   // Append the .cpy to the end of the hash string.
   int len = snprintf(NULL, 0, "%d", hash_file);
@@ -13,8 +13,8 @@ void copy_file(int hash_file, char* file_name) {
   snprintf(cpy, len + 5, "%d", hash_file);
   cpy = strcat(cpy, ".cpy");
 
-  char* cpy_path = malloc(10 + len + 5);
-  sprintf(cpy_path, "%s/%s", ".svc/HEAD", cpy);
+  char* cpy_path = malloc(strlen(file_path) + 1 + strlen(cpy) + 1);
+  sprintf(cpy_path, "%s/%s", file_path, cpy);
 
   // Open the cpy file and the file being copied from
   FILE* cpyfp = fopen(cpy_path, "w+");
@@ -33,7 +33,7 @@ void copy_file(int hash_file, char* file_name) {
   return;
 }
 
-FILE* create_diff_file(int hash_file, char* file_name) {
+FILE* create_diff_file(int hash_file, char* file_path, char* file_name) {
 
   // Create a diff file name
   int len = snprintf(NULL, 0, "%d", hash_file);
@@ -48,14 +48,13 @@ FILE* create_diff_file(int hash_file, char* file_name) {
   hash = strcat(hash, ".diff");
 
   // Create a path to the diff file for the file_name
-  char* file_path = malloc(11 + len + 7);
-  char* head_dir = ".svc/HEAD";
-  snprintf(file_path, 11 + len + 7, "%s/%s", head_dir, hash);
+  char* diff_path = malloc(strlen(file_path) + 1 + strlen(hash) + 1);
+  sprintf(diff_path, "%s/%s", file_path, hash);
 
   // Create a diff file in the HEAD directory and return the ptr
-  FILE* pfp = fopen(file_path, "w+");
+  FILE* pfp = fopen(diff_path, "w+");
 
-  free(file_path);
+  free(diff_path);
   free(hash);
   return pfp;
 }

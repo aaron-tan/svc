@@ -9,7 +9,7 @@ struct head {
   struct branch* cur_branch;
   struct file* tracked_files;
   int n_tracked;
-  FILE* head_fp;
+  char* head_fp;
 };
 
 // Struct branch is implemented as a circular linked list.
