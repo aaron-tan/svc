@@ -4,6 +4,7 @@
 #include "helper.h"
 #include "clean.h"
 #include "../svc.h"
+#include "../core/file.h"
 
 /** This file contains all the helper functions used in svc.c */
 
@@ -26,25 +27,6 @@ int check_invalid(char* str) {
   return 0;
 }
 
-// Get the number of bytes of a file.
-int get_num_bytes(char* file_name) {
-  FILE* fp = fopen(file_name, "rb");
-
-  if (fp == NULL) {
-    return -3;
-  }
-
-  fseek(fp, 0L, SEEK_END);
-
-  int num_bytes = ftell(fp);
-
-  fseek(fp, 0, SEEK_SET);
-
-  fclose(fp);
-
-  return num_bytes;
-}
-
 // Check if a branch exists. Utilised in svc_branch.
 int branch_exist(void* helper, char* branch_name) {
   struct head* h = (struct head*) helper;
@@ -58,6 +40,18 @@ int branch_exist(void* helper, char* branch_name) {
   } while (b != h->cur_branch);
 
   return 0;
+}
+
+char* current_branch(void* helper) {
+  struct head* h = (struct head*) helper;
+  FILE* headp = fopen(h->head_fp, "r");
+
+  long fsize = get_num_bytes(h->head_fp);
+  char* cur_branch = malloc(fsize + 1);
+  fread(cur_branch, 1, fsize, headp);
+
+  fclose(headp);
+  return cur_branch;
 }
 
 /** List all branches without printing name. Used in the cleanup function.
@@ -210,28 +204,4 @@ char* get_commit_id(void* helper, char* message) {
   free(tracked);
 
   return hex;
-}
-
-void create_dir(char* dir_name, mode_t mode) {
-  int ret_val = mkdir(dir_name, mode);
-  if (ret_val < 0) {
-    if (errno == EEXIST) {
-      return;
-    } else {
-      fprintf(stderr, "Could not create directory\n");
-    }
-  }
-
-  return;
-}
-
-long get_file_size(char* file_name) {
-  struct stat sb;
-
-  if (stat(file_name, &sb) < 0) {
-    perror("Stat error\n");
-    exit(EXIT_FAILURE);
-  }
-
-  return sb.st_size;
 }

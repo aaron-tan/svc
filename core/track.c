@@ -4,6 +4,7 @@
 #include "../svc.h"
 #include "../utils/helper.h"
 #include "track.h"
+#include "file.h"
 
 void copy_file(int hash_file, char* file_path, char* file_name) {
   // Convert the hash into a string and also get the length
@@ -21,7 +22,7 @@ void copy_file(int hash_file, char* file_path, char* file_name) {
   FILE* origfp = fopen(file_name, "r+");
 
   // Write the contents of the original file to the copy
-  long fsize = get_file_size(file_name);
+  long fsize = get_num_bytes(file_name);
   char* file_contents = malloc((size_t) fsize);
 
   // Read the contents of the file being copied and write to the cpy file

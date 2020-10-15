@@ -5,6 +5,7 @@
 #include "utils/helper.h"
 #include "utils/clean.h"
 #include "core/track.h"
+#include "core/file.h"
 
 // Initialise the data structures and return a ptr to the memory.
 void *svc_init(void) {
@@ -430,18 +431,6 @@ char **list_branches(void *helper, int *n_branches) {
     return branch_list;
 }
 
-char* current_branch(void* helper) {
-  struct head* h = (struct head*) helper;
-  FILE* headp = fopen(h->head_fp, "r");
-
-  long fsize = get_file_size(h->head_fp);
-  char* cur_branch = malloc(fsize + 1);
-  fread(cur_branch, 1, fsize, headp);
-
-  fclose(headp);
-  return cur_branch;
-}
-
 int svc_add(void *helper, char *file_name) {
     if (file_name == NULL) {
       return -1;
@@ -460,6 +449,24 @@ int svc_add(void *helper, char *file_name) {
 
     // Track the file
     int hash = hash_file(helper, file_name);
+
+    // Check if file has already been added
+    /** First we convert the hash into a string so we can compare it
+    *   as a substring in the list of file names */
+    char* str_hash = malloc(snprintf(NULL, 0, "%d", hash) + 1);
+    snprintf(str_hash, snprintf(NULL, 0, "%d", hash) + 1, "%d", hash);
+    int ls_len = 0;
+    char** file_list = ls_dir(file_path, &ls_len);
+
+    for (int i = 0; i < ls_len; i++) {
+      if (strstr(file_list[i], str_hash) != NULL) {
+        // The file has been added before, return -2
+        free(file_path);
+        free(str_hash);
+        return -2;
+      }
+    }
+
     FILE* tracker = create_diff_file(hash, file_path, file_name);
 
     // Create a copy of the file
