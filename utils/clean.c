@@ -2,7 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "helper.h"
-#include "svc.h"
+#include "../svc.h"
 
 /** This file contains all the helper functions used in
 * the cleanup function. They all return a dynamically allocated array

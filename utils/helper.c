@@ -3,7 +3,8 @@
 #include <unistd.h>
 #include "helper.h"
 #include "clean.h"
-#include "svc.h"
+#include "../svc.h"
+#include "../core/file.h"
 
 /** This file contains all the helper functions used in svc.c */
 
@@ -26,25 +27,6 @@ int check_invalid(char* str) {
   return 0;
 }
 
-// Get the number of bytes of a file.
-int get_num_bytes(char* file_name) {
-  FILE* fp = fopen(file_name, "rb");
-
-  if (fp == NULL) {
-    return -3;
-  }
-
-  fseek(fp, 0L, SEEK_END);
-
-  int num_bytes = ftell(fp);
-
-  fseek(fp, 0, SEEK_SET);
-
-  fclose(fp);
-
-  return num_bytes;
-}
-
 // Check if a branch exists. Utilised in svc_branch.
 int branch_exist(void* helper, char* branch_name) {
   struct head* h = (struct head*) helper;
@@ -58,6 +40,25 @@ int branch_exist(void* helper, char* branch_name) {
   } while (b != h->cur_branch);
 
   return 0;
+}
+
+char* current_branch(void* helper) {
+  struct head* h = (struct head*) helper;
+  FILE* headp = fopen(h->head_fp, "r");
+
+  long fsize = get_num_bytes(h->head_fp);
+  char* cur_branch = malloc(fsize + 1);
+  fread(cur_branch, 1, fsize, headp);
+
+  fclose(headp);
+  return cur_branch;
+}
+
+char* hash2str(int hash) {
+  char* strh = malloc(snprintf(NULL, 0, "%d", hash) + 1);
+  sprintf(strh, "%d", hash);
+
+  return strh;
 }
 
 /** List all branches without printing name. Used in the cleanup function.
