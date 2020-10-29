@@ -1,6 +1,9 @@
 #ifndef file_h
 #define file_h
 
+// Return the current branch path in .svc as a string
+char* get_curb_path(void* helper);
+
 // Get the number of bytes of a file
 int get_num_bytes(char* file_name);
 

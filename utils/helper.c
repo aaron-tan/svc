@@ -54,6 +54,13 @@ char* current_branch(void* helper) {
   return cur_branch;
 }
 
+char* hash2str(int hash) {
+  char* strh = malloc(snprintf(NULL, 0, "%d", hash) + 1);
+  sprintf(strh, "%d", hash);
+
+  return strh;
+}
+
 /** List all branches without printing name. Used in the cleanup function.
 * Identical to actual list_branches except it does not print branch names.
 */

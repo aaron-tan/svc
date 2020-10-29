@@ -11,6 +11,9 @@ int branch_exist(void* helper, char* branch_name);
 // Return the current active branch as a string
 char* current_branch(void* helper);
 
+// Convert an int hash type to a string
+char* hash2str(int hash);
+
 char **list_branches_noout(void *helper, int *n_branches);
 
 int check_modified(void* helper);

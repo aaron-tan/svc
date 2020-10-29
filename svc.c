@@ -525,9 +525,30 @@ int svc_rm(void *helper, char *file_name) {
     if (file_name == NULL) {
       return -1;
     }
-
-    // Get the hash of the file.
     int h_file = hash_file(helper, file_name);
+    // Get the hash of the file and convert it to a string
+    char* str_hash = hash2str(hash_file(helper, file_name));
+
+    // Get the path of the current branch.
+    char* curb_path = get_curb_path(helper);
+    int ls_len = 0;
+    char** file_list = ls_dir(curb_path, &ls_len);
+
+    for (int i = 0; i < ls_len; i++) {
+      if (strstr(file_list[i], str_hash) != NULL) {
+        // We have found the diff and cpy files,
+        // Append file name to the current branch path
+        char* rem_filepath = malloc(strlen(curb_path) + strlen(file_list[i]) + 2);
+        sprintf(rem_filepath, "%s/%s", curb_path, file_list[i]);
+
+        // Remove the file
+        remove(rem_filepath);
+
+        free(curb_path);
+        free(str_hash);
+        return hash_file(helper, file_name);
+      }
+    }
 
     struct head* h = (struct head*) helper;
     struct file* files = h->tracked_files;

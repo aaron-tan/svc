@@ -5,7 +5,18 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+#include "../utils/helper.h"
 #include "file.h"
+
+char* get_curb_path(void* helper) {
+  char* cur_branch = current_branch(helper);
+
+  char* path = malloc(14 + strlen(cur_branch) + 1);
+  sprintf(path, "%s/%s", ".svc/branches", cur_branch);
+
+  free(cur_branch);
+  return path;
+}
 
 int get_num_bytes(char* file_name) {
   FILE* fp = fopen(file_name, "rb");
