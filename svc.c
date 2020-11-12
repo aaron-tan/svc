@@ -2,11 +2,22 @@
 #include <string.h>
 #include <unistd.h>
 #include "svc.h"
-#include "helper.h"
-#include "clean.h"
+#include "utils/helper.h"
+#include "utils/clean.h"
+#include "core/track.h"
+#include "core/file.h"
 
 // Initialise the data structures and return a ptr to the memory.
 void *svc_init(void) {
+    // Create a directory containing commit, branch and head information.
+    create_dir(".svc/", S_IRWXU);
+
+    // Directory contains commits made by each branch.
+    create_dir(".svc/branches", S_IRWXU);
+
+    // Create a directory for the master branch.
+    create_dir(".svc/branches/master", S_IRWXU);
+
     // Branches will be stored as a circular linked list.
     struct branch* master = malloc(sizeof(struct branch));
     master->name = malloc(51);
@@ -19,6 +30,11 @@ void *svc_init(void) {
     helper->cur_branch = master;
     helper->tracked_files = NULL;
     helper->n_tracked = 0;
+    helper->head_fp = ".svc/HEAD";
+
+    FILE* headp = fopen(helper->head_fp, "w+");
+    fwrite("master", 1, 7, headp);
+    fclose(headp);
 
     return helper;
 }
@@ -324,7 +340,7 @@ void print_commit(void *helper, char *commit_id) {
 
 // Creates a new branch.
 int svc_branch(void *helper, char *branch_name) {
-    // Do some initial checks.
+    // Do some initial checks and check if branch name is invalid.
     if (branch_name == NULL || check_invalid(branch_name)) {
       return -1;
     }
@@ -425,6 +441,37 @@ int svc_add(void *helper, char *file_name) {
       return -3;
     }
 
+    // Get the current branch.
+    char* curb = current_branch(helper);
+    char* file_path = malloc(14 + strlen(curb) + 1);
+    // file_path = ".svc/branches";
+    sprintf(file_path, "%s/%s", ".svc/branches", curb);
+
+    // Track the file
+    int hash = hash_file(helper, file_name);
+
+    // Check if file has already been added
+    /** First we convert the hash into a string so we can compare it
+    *   as a substring in the list of file names */
+    char* str_hash = malloc(snprintf(NULL, 0, "%d", hash) + 1);
+    snprintf(str_hash, snprintf(NULL, 0, "%d", hash) + 1, "%d", hash);
+    int ls_len = 0;
+    char** file_list = ls_dir(file_path, &ls_len);
+
+    for (int i = 0; i < ls_len; i++) {
+      if (strstr(file_list[i], str_hash) != NULL) {
+        // The file has been added before, return -2
+        free(file_path);
+        free(str_hash);
+        return -2;
+      }
+    }
+
+    FILE* tracker = create_diff_file(hash, file_path, file_name);
+
+    // Create a copy of the file
+    copy_file(hash, file_path, file_name);
+
     FILE* fp = fopen(file_name, "rb");
     int bytes = get_num_bytes(file_name);
 
@@ -478,9 +525,30 @@ int svc_rm(void *helper, char *file_name) {
     if (file_name == NULL) {
       return -1;
     }
-
-    // Get the hash of the file.
     int h_file = hash_file(helper, file_name);
+    // Get the hash of the file and convert it to a string
+    char* str_hash = hash2str(hash_file(helper, file_name));
+
+    // Get the path of the current branch.
+    char* curb_path = get_curb_path(helper);
+    int ls_len = 0;
+    char** file_list = ls_dir(curb_path, &ls_len);
+
+    for (int i = 0; i < ls_len; i++) {
+      if (strstr(file_list[i], str_hash) != NULL) {
+        // We have found the diff and cpy files,
+        // Append file name to the current branch path
+        char* rem_filepath = malloc(strlen(curb_path) + strlen(file_list[i]) + 2);
+        sprintf(rem_filepath, "%s/%s", curb_path, file_list[i]);
+
+        // Remove the file
+        remove(rem_filepath);
+
+        free(curb_path);
+        free(str_hash);
+        return hash_file(helper, file_name);
+      }
+    }
 
     struct head* h = (struct head*) helper;
     struct file* files = h->tracked_files;

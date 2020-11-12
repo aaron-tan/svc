@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "svc.h"
-#include "helper.h"
+#include "utils/helper.h"
 
 int test_svc_init(void* helper) {
   struct head* h = (struct head*) helper;
@@ -215,6 +215,8 @@ int test_example_2(void* helper) {
   fputs("#include \"svc.h\"\nvoid *svc_init(void) {\n    return NULL;\n}\n", f);
   fclose(f);
 
+  assert(hash_file(helper, "COMP2017/svc.c") == 4798);
+
   assert(svc_rm(helper, "COMP2017/svc.h") == 5007);
 
   char* init_id = svc_commit(helper, "Implemented svc_init");
@@ -249,6 +251,7 @@ int test_example_2(void* helper) {
   assert(svc_checkout(helper, "master") == 0);
 
   free(prev_commits);
+  // cleanup(helper);
 
   return 0;
 }
